@@ -1,0 +1,25 @@
+.card{
+	padding: 14px;
+	width: 341px;
+	height: 270px;
+	border-radius: 25px;
+	background-color: #292D33;
+	color: white;
+}
+
+.headerCard{
+	align-items: center;
+	display: flex;
+	margin-bottom: 14px;
+}
+
+.eventStatus{
+	border-radius: 9px;
+	background-color: #3169F2;
+	width: max-content;
+	padding-top: 9px;
+	padding-bottom: 9px;
+	padding-left: 14px;
+	padding-right: 14px;
+	margin-right: 14px;
+}
