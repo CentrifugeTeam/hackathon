@@ -1,0 +1,55 @@
+.buttons {
+  margin-left: auto;
+
+  .clear,
+  .show {
+    font-family: "Evolventa", Arial, sans-serif;
+    font-size: 16px;
+    letter-spacing: 1px;
+    color: rgba(0, 0, 0, 0.6);
+    background: none;
+    border: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+  }
+
+  .clear {
+    margin-right: 40px;
+  }
+
+  .clear:hover {
+    color: rgb(0, 0, 0);
+  }
+
+  .show {
+    width: 218px;
+    height: 60px;
+    color: #3169f2;
+    border: 1px solid #3169f2;
+    border-radius: 20px;
+  }
+
+  .show:hover {
+    background: #3169f2;
+    color: white;
+  }
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 1s ease-in, opacity 0.3s ease;
+}
+
+.inputs.visible {
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.inputs.hidden {
+  max-height: 0;
+  opacity: 0;
+}
