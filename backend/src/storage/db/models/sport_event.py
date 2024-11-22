@@ -4,7 +4,14 @@ from enum import unique
 from sqlalchemy import ForeignKey, String, Integer, Boolean, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, IDMixin
-from location import Location
+
+
+class Location(IDMixin, Base):
+    __tablename__ = 'locations'
+    city: Mapped[str] = mapped_column(String())
+    region: Mapped[str] = mapped_column(String(), nullable=True)
+    country: Mapped[str] = mapped_column(String())
+    sports: Mapped[list['SportEvent']] = relationship(back_populates='location')
 
 
 class AgeGroup(IDMixin, Base):
@@ -25,14 +32,14 @@ class Discipline(IDMixin, Base):
     __tablename__ = 'disciplines'
     name: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
     event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'))
-    sports: Mapped[list['SportEvent']] = relationship(back_populates='disciplines')
+    sport: Mapped['SportEvent'] = relationship(back_populates='disciplines')
 
 
 class Program(IDMixin, Base):
     __tablename__ = 'programs'
     name: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
     event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'))
-    sports: Mapped[list['SportEvent']] = relationship(back_populates='programs')
+    sport: Mapped['SportEvent'] = relationship(back_populates='programs')
 
 
 class SportEvent(IDMixin, Base):
