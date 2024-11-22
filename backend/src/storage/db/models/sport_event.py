@@ -19,47 +19,58 @@ class AgeGroup(IDMixin, Base):
     name: Mapped[str] = mapped_column(String(length=100), nullable=False, unique=True)
     age_from: Mapped[int] = mapped_column(Integer, nullable=False)  # Минимальный возраст
     age_to: Mapped[int] = mapped_column(Integer, nullable=False)  # Максимальный возраст
-    sports: Mapped[list['SportEvent']] = relationship(back_populates='age_group')
+    # sports: Mapped[list['SportEvent']] = relationship(back_populates='age_group')
 
 
-class NameSportEvent(IDMixin, Base):
-    __tablename__ = 'name_sport_events'
+class EventType(IDMixin, Base):
+    __tablename__ = 'event_types'
+    sport: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
+    category: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
+    sports: Mapped[list['SportEvent']] = relationship(back_populates='type_event')
+
+
+class Competition(IDMixin, Base):
+    __tablename__ = 'competitions'
+    type: Mapped[str] = mapped_column(String(length=80), nullable=False, unique=True)  # program or discipline
     name: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
-    sports: Mapped[list['SportEvent']] = relationship(back_populates='name_event')
 
 
-class Discipline(IDMixin, Base):
-    __tablename__ = 'disciplines'
-    name: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
-    event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'))
-    sport: Mapped['SportEvent'] = relationship(back_populates='disciplines')
+class SportCompetitions(IDMixin, Base):
+    __tablename__ = 'sport_competitions'
+    sport_id: Mapped[int] = mapped_column(
+        ForeignKey('events.id', ondelete='CASCADE'))
+    competition_id: Mapped[int] = mapped_column(
+        ForeignKey('competitions.id', ondelete='CASCADE'))
 
 
-class Program(IDMixin, Base):
-    __tablename__ = 'programs'
-    name: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
-    event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'))
-    sport: Mapped['SportEvent'] = relationship(back_populates='programs')
+class SportAges(IDMixin, Base):
+    __tablename__ = 'sport_ages'
+    age_id: Mapped[int] = mapped_column(
+        ForeignKey('age_groups.id', ondelete='CASCADE'))
+    sport_id: Mapped[int] = mapped_column(
+        ForeignKey('events.id', ondelete='CASCADE'))
 
 
 class SportEvent(IDMixin, Base):
     __tablename__ = 'events'
 
+    name: Mapped[str] = mapped_column(String(length=700), nullable=False, unique=True)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)  # Дата начала
     end_date: Mapped[date] = mapped_column(Date, nullable=False)  # Дата окончания
-
-    name_event_id: Mapped[int] = mapped_column(
-        ForeignKey('name_sport_events.id', ondelete='CASCADE'))  # Связь с наименованием мероприятия
-    location_id: Mapped[int] = mapped_column(
-        ForeignKey('locations.id', ondelete='CASCADE'))  # Связь с местом проведения
-    age_group_id: Mapped[int] = mapped_column(
-        ForeignKey('age_groups.id', ondelete='CASCADE'))  # Связь с возрастной группой
-
     participants_count: Mapped[int] = mapped_column(Integer, nullable=False)  # Количество участников
 
-    name_event: Mapped[NameSportEvent] = relationship(back_populates='sports')
+    type_event_id: Mapped[int] = mapped_column(
+        ForeignKey('event_types.id', ondelete='CASCADE'))
+    location_id: Mapped[int] = mapped_column(
+        ForeignKey('locations.id', ondelete='CASCADE'))  # Связь с местом проведения
+    sport_ages_id: Mapped[int] = mapped_column(
+        ForeignKey('sport_ages.id', ondelete='CASCADE'))  # Связь с возрастной группой
+
+    sport_competitions_id: Mapped[int] = mapped_column(
+        ForeignKey('sport_competitions.id', ondelete='CASCADE')
+    )
+
+    type_event: Mapped[EventType] = relationship(back_populates='sports')
     location: Mapped[Location] = relationship(back_populates='sports')
 
-    age_group: Mapped[AgeGroup] = relationship(back_populates='sports')
-    disciplines: Mapped[list[Discipline]] = relationship(back_populates='sport')
-    programs: Mapped[list[Program]] = relationship(back_populates='sport')
+    # age_group: Mapped[AgeGroup] = relationship(back_populates='sports')
