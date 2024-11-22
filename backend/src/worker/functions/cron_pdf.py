@@ -1,9 +1,38 @@
+import asyncio
+
 import aiohttp
 from bs4 import BeautifulSoup
 import json
 import datetime
+from logging import getLogger
+from concurrent.futures import ProcessPoolExecutor
+from ..parser_pdf.parser import ParserPDF
 
-async def fetch_pdf(ctx):
+logger = getLogger(__name__)
+
+
+async def cron_update_calendar_table(ctx):
+    pdf_file = await fetch_pdf()
+    # check if file is updated
+    parser = ParserPDF()
+    loop = asyncio.get_running_loop()
+    with ProcessPoolExecutor() as executor:
+        res = await loop.run_in_executor(executor, parser.grap_rows, pdf_file)
+
+    logger.info('fetched pdf_file %s', pdf_file)
+    pass
+
+
+async def _fetch_pdf(url_to_pdf: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url_to_pdf, ssl=False) as response:
+            return await response.read()
+
+
+
+
+
+async def fetch_pdf():
     url = 'https://www.minsport.gov.ru/activity/government-regulation/edinyj-kalendarnyj-plan/'
     async with aiohttp.ClientSession() as session:
         async with session.get(url, ssl=False) as response:
@@ -36,13 +65,11 @@ async def fetch_pdf(ctx):
 
                                             if current_year in doc_title:
                                                 pdf_url = document['attributes']['file']['data']['attributes']['url']
-                                                print(pdf_url)
-                                                return pdf_url
+                                                logger.info(pdf_url)
+                                                return await _fetch_pdf(pdf_url)
 
-                                print(f"Документ для {current_year} года не найден.")
+                                logger.info(f"Документ для %s года не найден.", current_year)
                         except json.JSONDecodeError as e:
-                            print(f"Ошибка при обработке JSON данных: {e}")
+                            logger.exception(f"Ошибка при обработке JSON данных:", exc_info=e)
             else:
-                print(f"Ошибка: {response.status}")
-
-
+                logger.info(f"Ошибка: %s", response.status)

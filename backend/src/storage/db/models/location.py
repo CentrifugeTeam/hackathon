@@ -17,7 +17,6 @@ class Region(IDMixin, Base):
 
 	name: Mapped[str] = mapped_column(String(length=100), nullable=False)
 	country_id: Mapped[int] = mapped_column(ForeignKey('countries.id', ondelete='CASCADE'))
-
 	country: Mapped[Country] = relationship('Country', back_populates='regions')
 	cities: Mapped[list['City']] = relationship('City', back_populates='region', cascade='all, delete')
 

@@ -3,7 +3,7 @@ from saq import CronJob, Queue
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from logging import getLogger, basicConfig, INFO, DEBUG
 from .settings import settings as conf_settings
-from .functions.cron_pdf import fetch_pdf
+from .functions.cron_pdf import cron_update_calendar_table
 
 logger = getLogger(__name__)
 
@@ -16,9 +16,6 @@ async def test(ctx, *, a):
     return {"x": a}
 
 
-async def cron(ctx):
-    # raise Exception
-    logger.info('ctx %s', ctx)
 
 
 async def startup(ctx):
@@ -49,7 +46,7 @@ settings = {
     "queue": queue,
     "functions": [test],
     "concurrency": 10,
-    "cron_jobs": [CronJob(fetch_pdf, cron="* * * * * */5")],  # run every 5 seconds
+    "cron_jobs": [CronJob(cron_update_calendar_table, cron="* * * * * * */5")], # "2 8 * * *" каждый день в 8 утра 2 минуты
     "startup": startup,
     "shutdown": shutdown,
     "before_process": before_process,
