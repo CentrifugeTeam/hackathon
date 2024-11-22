@@ -5,6 +5,7 @@ import styles from "./mainpage.module.scss";
 import { getEventStatus } from "../../shared/utils/getEventStatus";
 
 export const MainPage = () => {
+	console.log(data.event_date.start_date, data.event_date.end_date)
   const { status, statusColor } = getEventStatus(
     data.event_date.start_date,
     data.event_date.end_date
