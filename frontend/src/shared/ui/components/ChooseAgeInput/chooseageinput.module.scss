@@ -1,0 +1,29 @@
+.age_input {
+  position: relative;
+  font-family: "Evolventa", Arial, sans-serif;
+  margin-left: 60px;
+
+  .label {
+    font-size: 16px;
+    color: #333333;
+  }
+
+  .inputs {
+    display: flex;
+    gap: 20px;
+
+    .select {
+      width: 69px;
+      height: 65px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      cursor: pointer;
+      background-color: #f8f8f8;
+      color: #333333;
+      margin-top: 18px;
+      box-sizing: border-box;
+      font-family: "Evolventa", Arial, sans-serif;
+    }
+  }
+}

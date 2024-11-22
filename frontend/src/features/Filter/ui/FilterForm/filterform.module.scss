@@ -1,5 +1,8 @@
 .buttons {
   margin-left: auto;
+  margin-top: 100px;
+  width: 100%;
+  display: flex;
 
   .clear,
   .show {
@@ -36,15 +39,20 @@
 }
 
 .inputs {
-  display: flex;
-  flex-direction: column;
+  padding-bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  margin-top: 58px;
+  gap: 50px;
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transition: max-height 1s ease-in, opacity 0.3s ease;
+  transition: max-height 0.2s ease-in-out, opacity 0.3s ease,
+    padding-bottom 0.2s;
 }
 
 .inputs.visible {
+  padding-bottom: 250px;
   max-height: 1000px;
   opacity: 1;
 }
@@ -52,4 +60,28 @@
 .inputs.hidden {
   max-height: 0;
   opacity: 0;
+}
+
+.inputs_flex {
+  display: flex;
+}
+
+.inputs_flex2 {
+  display: flex;
+  gap: 60px;
+}
+
+.search {
+  // margin-top: 60px;
+  width: 134px;
+  height: 65px;
+  font-family: "Evolventa", Arial, sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  background: #3169f2;
+  letter-spacing: 1px;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  margin-top: auto;
 }
