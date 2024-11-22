@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from "./cartSportEvent.module.scss";
 import { ICartSportEvent } from "../../../interfaces";
+import { formatDateRange } from '../../../utils/formatDateRange';
 
 interface CartSportEventProps {
 	data: ICartSportEvent;
@@ -25,7 +26,7 @@ const CartSportEvent: React.FC<CartSportEventProps> = ({ data, statusColor, stat
 				</h4>
 				<h4>Женщины, Мужчины</h4>
 				<hr className={styles.hr} style={{ color: statusColor }} />
-				<h4 className={styles.location}>{data.location.city}</h4>
+				<h4 className={styles.location}>{data.location.city},<span> {formatDateRange(data.event_date.start_date, data.event_date.end_date)}</span></h4>
 				<h4>№ ЕКП {data.no_sm_ekp}</h4>
 		</div>
 	);

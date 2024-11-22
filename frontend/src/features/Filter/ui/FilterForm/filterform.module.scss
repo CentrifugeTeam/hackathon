@@ -1,8 +1,11 @@
 .buttons {
   margin-left: auto;
-  margin-top: 100px;
+  margin-top: 117px;
   width: 100%;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "Evolventa", Arial, sans-serif;
 
   .clear,
   .show {
@@ -42,7 +45,7 @@
   padding-bottom: 0;
   display: grid;
   grid-template-columns: 1fr auto;
-  margin-top: 58px;
+  margin-top: 49px;
   gap: 50px;
   overflow: hidden;
   max-height: 0;
