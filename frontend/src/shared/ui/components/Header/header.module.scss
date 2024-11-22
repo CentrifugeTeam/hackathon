@@ -1,0 +1,70 @@
+.header {
+  height: 100px;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+
+  .content {
+    width: 1440px;
+    display: flex;
+    align-items: center;
+
+    .logo {
+      display: flex;
+      flex-direction: column;
+
+      .sport {
+        font-family: "NauryzRedKeds", Arial, sans-serif;
+        color: #3169f2;
+        letter-spacing: 1px;
+      }
+
+      .calendar {
+        font-family: "Evolventa", Arial, sans-serif;
+        letter-spacing: 2px;
+      }
+
+      .sport,
+      .calendar {
+        font-size: 24px;
+        font-weight: bold;
+      }
+    }
+    .elements {
+      display: flex;
+      gap: 60px;
+      margin-left: 7%;
+
+      .elem {
+        font-family: "Evolventa", Arial, sans-serif;
+        font-size: 16px;
+        transition: 0.2s;
+      }
+
+      .elem:hover {
+        color: #3169f2;
+        cursor: pointer;
+      }
+    }
+
+    .bell_block {
+      margin-left: auto;
+      margin-right: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: #3169f2;
+      transition: font-size 0.1s ease, transform 0.1s ease;
+      cursor: pointer;
+
+      img {
+        margin-left: -0.5px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+}

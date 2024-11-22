@@ -1,0 +1,17 @@
+@font-face {
+  font-family: "Evolventa";
+  src: url("./assets/fonts/Evolventa-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "NauryzRedKeds";
+  src: url("./assets/fonts/NauryzRedKeds.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
