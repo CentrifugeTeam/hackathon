@@ -12,7 +12,9 @@ export const News = () => {
         <div className={styles.second}>
           <img src={SecondImage} alt="" />
         </div>
-        <h1>ffsdfasf</h1>
+        <h1>
+          <span>Рекорд Мёрфи</span>, Сборная мира КХЛ на Кубке Первого канала
+        </h1>
       </div>
     </div>
   );
