@@ -59,6 +59,10 @@ class EventMap(BaseModel):
     city: str
 
 
+class Discipline(BaseModel):
+    name: str
+
+
 class Row(BaseModel):
     sport_event: SportEvent
     interval: IntervalEvent
@@ -67,6 +71,7 @@ class Row(BaseModel):
     sport: str
     category: str
     reqs: list[PersonRequirements]
+    disciplines: list[Discipline]
 
 
 class ParserPDF:
@@ -115,21 +120,12 @@ class ParserPDF:
     def _create_generator_for_page(self, page: Page):
         return (self._parse_raw_data(data) for data in page.get_text('blocks'))
 
-    def _end_parse_pdf(self, page: Page):
-        pass
-
-    def _while_dont_meet_sport(self, page: Page):
-
-        # id и кубок россии, дата, город и округ, количество человек
-        # и после количества человек может быть спорт или состав
-        gen = (self._parse_raw_data(data) for data in page.get_text('blocks'))
-        row = self._parse_rows(gen)
-
     def _handle_default_row(self, gen: Generator, blocks: tuple[Block, Block]) -> Row:
         # logger.info('blocks %s', blocks)
         sport_block, date_block = blocks
         reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
-        sport_event = SportEvent(id=sport_block.text[0], name=sport_block.text[1], text=sport_block.text[3])
+        disciplines = self._convert_to_disciplines(sport_block.text[3])
+        sport_event = SportEvent(id=sport_block.text[0], name=sport_block.text[1])
         interval_event = IntervalEvent(start_date=date_block.text[0], end_date=date_block.text[1])
 
         event_map = self._create_event_map(gen)
@@ -141,9 +137,26 @@ class ParserPDF:
                   sport=self._current_sport,
                   category=self._current_category,
                   reqs=reqs,
+                  disciplines=disciplines
                   )
         # logger.info('row %s', row)
         return row
+
+    def _convert_to_disciplines(self, text: str):
+        res = []
+        for name in text.split(','):
+            name = name.strip()
+            res.append(Discipline(name=name))
+        return res
+
+    def _convert_to_programs_and_disciplines(self, text: str):
+        res = []
+        text.find('дисциплины')
+        for name in text.split(','):
+            name = name.strip()
+            if name == 'КЛАСС':
+                pass
+        pass
 
     def _convert_to_person_requirements(self, text: str):
         words = text.split(' ')
@@ -191,7 +204,8 @@ class ParserPDF:
 
     def _handle_name_sport_row(self, gen: Generator, sport_block: Block) -> Row:
         # logger.info('sport_block %s', sport_block)
-        sport_event = SportEvent(id=sport_block.text[0], name=sport_block.text[1], text=sport_block.text[3])
+        disciplines = self._convert_to_disciplines(sport_block.text[3])
+        sport_event = SportEvent(id=sport_block.text[0], name=sport_block.text[1])
         reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
         date_block = next(gen)
         interval_event = IntervalEvent(start_date=date_block.text[0], end_date=date_block.text[1])
@@ -206,6 +220,7 @@ class ParserPDF:
                   sport=self._current_sport,
                   category=self._current_category,
                   reqs=reqs,
+                  disciplines=disciplines
                   )
         # logger.info('row %s', row)
         return row
