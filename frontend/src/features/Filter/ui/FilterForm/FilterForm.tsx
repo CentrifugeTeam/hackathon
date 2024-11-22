@@ -51,12 +51,14 @@ export const FilterForm = () => {
     <>
       <div className={styles.buttons}>
         <h1>ЗАПОЛНИТЕ ФОРМУ</h1>
-        <button className={styles.clear} onClick={clearFilters}>
-          Очистить фильтр
-        </button>
-        <button className={styles.show} onClick={toggleFilter}>
-          {isFilterVisible ? "Скрыть фильтры" : "Показать фильтры"}
-        </button>
+        <div>
+          <button className={styles.clear} onClick={clearFilters}>
+            Очистить фильтр
+          </button>
+          <button className={styles.show} onClick={toggleFilter}>
+            {isFilterVisible ? "Скрыть фильтры" : "Показать фильтры"}
+          </button>
+        </div>
       </div>
 
       <div
