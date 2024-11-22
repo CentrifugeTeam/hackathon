@@ -37,6 +37,7 @@ async def cron_update_calendar_table(ctx):
 
 async def _fetch_pdf(ctx, url_to_pdf: str):
     maker = ctx['async_session_maker']
+    # TODO create check table, тестовая таблица уже создана
     # async with maker() as db_session:
     #     db_session: AsyncSession
     #     stmt = select(FilePDF).join(File, File.id == FilePDF.file_id).where(File.file_path == url_to_pdf)
