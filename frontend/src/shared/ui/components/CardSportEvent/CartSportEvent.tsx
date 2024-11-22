@@ -1,40 +1,34 @@
+import React from 'react';
 import styles from "./cartSportEvent.module.scss";
-import { getEventStatus } from "../../../utils/getEventStatus";
+import { ICartSportEvent } from "../../../interfaces";
 
-const data = {
-    "name_event": "УЧЕБНО - ТРЕНИРОВОЧНОЕ",
-    "event_date": {
-        "start_date": "2024-11-26",
-        "end_date": "2024-12-12"
-    },
-    "no_sm_ekp": 2139780024013372,
-    "location": {
-        "city": "Калининград",
-        "region": "Калининградская обл",
-        "country": "Россия"
-    },
-    "discipline": "discipline",
-    "participants_count": 25,
-    "additional_info": "Абоба"
+interface CartSportEventProps {
+	data: ICartSportEvent;
+	statusColor: string;
+	status: string;
 }
 
+const CartSportEvent: React.FC<CartSportEventProps> = ({ data, statusColor, status }) => {
 
-export const CartSportEvent = () => {
-    const status = getEventStatus(data.event_date.start_date, data.event_date.end_date);
-
-    return (
-        <div className={styles.card}>
-						<div className={styles.headerCard}>
-							<p className={styles.eventStatus}>{status}</p>
-							<p>спортивные</p>
-						</div>
-            <h4>{data.name_event}</h4>
-						{/* <h5 className={styles.}>{data.name_event}</h5> */}
-            <p>Местоположение: {data.location.city}, {data.location.region}, {data.location.country}</p>
-            <p>Количество участников: {data.participants_count}</p>
-            <p>Дополнительная информация: {data.additional_info}</p>
-        </div>
-    );
+	return (
+		<div className={styles.card}>
+				<div className={styles.headerCard}>
+					<p className={styles.eventStatus} style={{ background: statusColor }}>
+						{status}
+					</p>
+					<p>спортивные</p>
+				</div>
+				<h4>{data.name_event}</h4>
+				<h5 className={styles.eventText}>{data.name_event} МЕРОПРИЯТИЕ</h5>
+				<h4 className={styles.typeEvent}>
+					<span className={styles.eventText}>ВИД СПОРТА: </span>{data.discipline}
+				</h4>
+				<h4>Женщины, Мужчины</h4>
+				<hr className={styles.hr} style={{ color: statusColor }} />
+				<h4 className={styles.location}>{data.location.city}</h4>
+				<h4>№ ЕКП {data.no_sm_ekp}</h4>
+		</div>
+	);
 };
 
 export default CartSportEvent;

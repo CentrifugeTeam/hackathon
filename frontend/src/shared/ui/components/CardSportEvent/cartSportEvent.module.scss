@@ -15,11 +15,29 @@
 
 .eventStatus{
 	border-radius: 9px;
-	background-color: #3169F2;
 	width: max-content;
 	padding-top: 9px;
 	padding-bottom: 9px;
 	padding-left: 14px;
 	padding-right: 14px;
 	margin-right: 14px;
+}
+
+.eventText{
+	color: #cecece;
+	font-size: 13px;
+	margin-bottom: 14px;
+}
+
+.typeEvent{
+	margin-bottom: 14px;
+}
+
+.hr{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.location{
+	margin-bottom: 14px;
 }
