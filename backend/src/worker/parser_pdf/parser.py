@@ -85,20 +85,21 @@ class ParserPDF:
         pdf = pymupdf.open(file)
         gen = self._create_generator_for_page(pdf[0])
         logger.info('start proccessing page 1')
+        result = []
         for row in self._start_parse_pdf(gen):
-            yield row
+            result.append(row)
         logger.info('finished proccessing page 1')
 
         for page in pdf[1:]:
             page: Page
-            logger.info('start proccessing page %d', page.number)
+            # logger.info('start proccessing page %d', page.number)
             gen = self._create_generator_for_page(page)
             for row in self._parse_rows(gen):
-                yield row
-            logger.info('finished proccessing page %d', page.number)
-            pass
+                result.append(row)
+            # logger.info('finished proccessing page %d', page.number)
 
         logger.info('end parcing')
+        return result
 
     def _start_parse_pdf(self, gen: Generator):
         # в начале документа иду до основного состава и беру спорт
@@ -106,7 +107,7 @@ class ParserPDF:
             if len(block.text) == 1 and block.text[0] in self._key_words_for_choice_sport:
                 self._current_category = block.text[0]
                 self._current_sport = self._current_sport[0]
-                logger.info('found first categories %s and sports %s', self._current_category, self._current_sport)
+                # logger.info('found first categories %s and sports %s', self._current_category, self._current_sport)
                 return self._parse_rows(gen)
             else:
                 self._current_sport = block.text
@@ -125,14 +126,14 @@ class ParserPDF:
         row = self._parse_rows(gen)
 
     def _handle_default_row(self, gen: Generator, blocks: tuple[Block, Block]) -> Row:
-        logger.info('blocks %s', blocks)
+        # logger.info('blocks %s', blocks)
         sport_block, date_block = blocks
         reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
         sport_event = SportEvent(id=sport_block.text[0], name=sport_block.text[1], text=sport_block.text[3])
         interval_event = IntervalEvent(start_date=date_block.text[0], end_date=date_block.text[1])
 
         event_map = self._create_event_map(gen)
-        logger.info('event_map %s, interval_event %s , sport_event %s', event_map, interval_event, sport_event)
+        # logger.info('event_map %s, interval_event %s , sport_event %s', event_map, interval_event, sport_event)
 
         count_block = next(gen)
         row = Row(sport_event=sport_event, interval=interval_event, map=event_map,
@@ -141,7 +142,7 @@ class ParserPDF:
                   category=self._current_category,
                   reqs=reqs,
                   )
-        logger.info('row %s', row)
+        # logger.info('row %s', row)
         return row
 
     def _convert_to_person_requirements(self, text: str):
@@ -189,14 +190,14 @@ class ParserPDF:
         return event_map
 
     def _handle_name_sport_row(self, gen: Generator, sport_block: Block) -> Row:
-        logger.info('sport_block %s', sport_block)
+        # logger.info('sport_block %s', sport_block)
         sport_event = SportEvent(id=sport_block.text[0], name=sport_block.text[1], text=sport_block.text[3])
         reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
         date_block = next(gen)
         interval_event = IntervalEvent(start_date=date_block.text[0], end_date=date_block.text[1])
 
         event_map = self._create_event_map(gen)
-        logger.info('event_map %s, interval_event %s , sport_event %s', event_map, interval_event, sport_event)
+        # logger.info('event_map %s, interval_event %s , sport_event %s', event_map, interval_event, sport_event)
 
         name_city: str
         count_block = next(gen)
@@ -206,7 +207,7 @@ class ParserPDF:
                   category=self._current_category,
                   reqs=reqs,
                   )
-        logger.info('row %s', row)
+        # logger.info('row %s', row)
         return row
 
     def _handle_category_sport_row(self, gen: Generator) -> Row:

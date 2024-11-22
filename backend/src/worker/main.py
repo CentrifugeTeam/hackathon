@@ -16,8 +16,6 @@ async def test(ctx, *, a):
     return {"x": a}
 
 
-
-
 async def startup(ctx):
     logger.info('ctx %s', ctx)
     logger.info('settings %s', conf_settings)
@@ -32,8 +30,8 @@ async def shutdown(ctx):
 
 
 async def before_process(ctx):
-    pass
-    # print(ctx["job"], ctx["db"])
+    ctx["job"].timeout = None
+    # logger.info("job %s and its timeout %d", ctx['job'], ctx["job"].timeout)
 
 
 async def after_process(ctx):
@@ -46,7 +44,8 @@ settings = {
     "queue": queue,
     "functions": [test],
     "concurrency": 10,
-    "cron_jobs": [CronJob(cron_update_calendar_table, cron="* * * * * * */5")], # "2 8 * * *" каждый день в 8 утра 2 минуты
+    "cron_jobs": [CronJob(cron_update_calendar_table, cron="* * * * * */5")],
+    # "2 8 * * *" каждый день в 8 утра 2 минуты
     "startup": startup,
     "shutdown": shutdown,
     "before_process": before_process,

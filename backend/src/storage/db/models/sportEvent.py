@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String, Integer, Boolean, DateTime
+from sqlalchemy import ForeignKey, String, Integer, Boolean, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, IDMixin
 from location import Location
@@ -33,8 +33,8 @@ class Program(IDMixin, Base):
 class SportEvent(IDMixin, Base):
     __tablename__ = 'sport_events'
 
-    start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)  # Дата начала
-    end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)  # Дата окончания
+    start_date: Mapped[datetime] = mapped_column(Date, nullable=False)  # Дата начала
+    end_date: Mapped[datetime] = mapped_column(Date, nullable=False)  # Дата окончания
 
     name_event_id: Mapped[int] = mapped_column(
         ForeignKey('name_sport_events.id', ondelete='CASCADE'))  # Связь с наименованием мероприятия
