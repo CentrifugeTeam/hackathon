@@ -11,7 +11,7 @@ from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType
 from ...managers import BaseManager
-from ...schemas.event import EventBulkRead
+from ...schemas.event import EventBulkRead, EventSearch
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -28,6 +28,12 @@ class CrudEventAPIRouter(CrudAPIRouter):
 
     def _get_all(self, *args: Any, **kwargs: Any):
         schema = self.schema
+
+        @self.get('/search')
+        async def func(name: str | None = None, session: AsyncSession = Depends(get_session)) -> Page[EventSearch]:
+            return await self.manager.paginated_list(session, filter_expressions={
+                SportEvent.name.ilike: f'%{name}%' if name else None
+            })
 
         @self.get('/')
         async def func(  # order_by=ordering_depends(children_ordering_fields),
@@ -52,9 +58,7 @@ class CrudEventAPIRouter(CrudAPIRouter):
                                                          EventType.category.in_: categories,
                                                          Location.city.in_: cities,
                                                          Location.region.in_: regions,
-                                                         SportEvent.start_date.__ge__: start_date,
-                                                         # SportEvent.start_date.__le__: start_date,
-
+                                                         SportEvent.start_date.__le__: start_date
                                                      },
                                                      options=[joinedload(SportEvent.location),
                                                               joinedload(SportEvent.age_groups),
