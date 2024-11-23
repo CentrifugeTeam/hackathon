@@ -6,6 +6,7 @@
   align-items: center;
   justify-content: space-between;
   font-family: "Evolventa", Arial, sans-serif;
+  transition: margin-top 0.3s ease; /* Плавный переход на изменение положения */
 
   .clear,
   .show {
@@ -39,6 +40,20 @@
     background: #3169f2;
     color: white;
   }
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  transition: opacity 0.3s ease, margin-bottom 0.3s ease; /* Плавность при скрытии */
+  opacity: 1;
+}
+
+h1.hidden {
+  opacity: 0;
+  margin-bottom: 0;
 }
 
 .inputs {

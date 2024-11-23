@@ -50,11 +50,15 @@ export const FilterForm = () => {
   return (
     <>
       <div className={styles.buttons}>
-        <h1>ЗАПОЛНИТЕ ФОРМУ</h1>
+        <h1 className={isFilterVisible ? "" : styles.hidden}>
+          ЗАПОЛНИТЕ ФОРМУ
+        </h1>
         <div>
-          <button className={styles.clear} onClick={clearFilters}>
-            Очистить фильтр
-          </button>
+          {isFilterVisible && (
+            <button className={styles.clear} onClick={clearFilters}>
+              Очистить фильтр
+            </button>
+          )}
           <button className={styles.show} onClick={toggleFilter}>
             {isFilterVisible ? "Скрыть фильтры" : "Показать фильтры"}
           </button>

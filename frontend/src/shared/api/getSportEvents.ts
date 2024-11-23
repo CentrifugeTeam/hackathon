@@ -12,8 +12,12 @@
 // 	}
 // }
 
-
-import { IAges, ILocation, ICompetitions, ICartSportEvent } from '../interfaces';
+import {
+  IAges,
+  ILocation,
+  ICompetitions,
+  ICartSportEvent,
+} from "../interfaces";
 
 // Примерные события
 export const events: ICartSportEvent[] = [
@@ -28,7 +32,7 @@ export const events: ICartSportEvent[] = [
     participants_count: 16,
   },
   {
-    id: 2033230024019195,
+    id: 5,
     name: "Баскетбольный кубок",
     start_date: "2024-11-23",
     end_date: "2024-11-25",
