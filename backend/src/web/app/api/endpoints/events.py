@@ -7,16 +7,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from crud import Context
 from datetime import date
+
+from crud.openapi_responses import not_found_response
 from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType
-from ...managers import BaseManager
+from ...managers import EventManager
 from ...schemas.event import EventBulkRead, EventSearch
 from logging import getLogger
 
 logger = getLogger(__name__)
 
-event_manager = BaseManager(SportEvent)
+event_manager = EventManager(SportEvent, default_ordering=SportEvent.start_date.desc())
 
 children_ordering_fields = {
     "start_date": SportEvent.start_date,
@@ -36,23 +38,21 @@ class CrudEventAPIRouter(CrudAPIRouter):
             })
 
         @self.get('/')
-        async def func(  # order_by=ordering_depends(children_ordering_fields),
+        async def func(
                 sports: str | None = None,
                 categories: str | None = None,
+                competitions: str | None = None,
                 cities: str | None = None,
-                regions: str | None = None,
                 participant_type: str | None = None,
                 participant_from: int | None = None,
                 participant_to: int | None = None,
                 participants_count: int | None = None,
-
                 start_date: date | None = None,
                 end_date: date | None = None,
                 session: AsyncSession = Depends(self.get_session)) -> Page[schema]:
             sports = sports if sports is None else sports.split(';')
             categories = categories if categories is None else categories.split(';')
             cities = cities if cities is None else cities.split(';')
-            regions = regions if regions is None else regions.split(';')
 
             return await self.manager.paginated_list(session,
                                                      participants_count=participants_count,
@@ -60,7 +60,7 @@ class CrudEventAPIRouter(CrudAPIRouter):
                                                          EventType.sport.in_: sports,
                                                          SportEvent.category.in_: categories,
                                                          Location.city.in_: cities,
-                                                         Location.region.in_: regions,
+                                                         Competition.name.in_: competitions,
                                                          AgeGroup.name.ilike: participant_type,
                                                          AgeGroup.age_to.__le__: participant_to,
                                                          AgeGroup.age_from.__ge__: participant_from,
@@ -71,8 +71,20 @@ class CrudEventAPIRouter(CrudAPIRouter):
                                                               joinedload(SportEvent.age_groups),
                                                               joinedload(SportEvent.competitions),
                                                               joinedload(SportEvent.type_event)]
-                                                     # order_by=order_by,
                                                      )
+
+    def _get_one(self):
+        @self.get(
+            path='/{id}',
+            response_model=self.schema,
+            responses={**not_found_response}
+
+        )
+        async def func(request: Request, id: int, session: AsyncSession = Depends(self.get_session)):
+            return await self.manager.get_or_404(session, id=id, options=[joinedload(SportEvent.location),
+                                                                   joinedload(SportEvent.age_groups),
+                                                                   joinedload(SportEvent.competitions),
+                                                                   joinedload(SportEvent.type_event)])
 
 
 crud_events = CrudEventAPIRouter(Context(schema=EventBulkRead,

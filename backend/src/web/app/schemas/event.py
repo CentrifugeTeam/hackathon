@@ -15,8 +15,8 @@ class EventBase(BaseModel):
 
 
 class Event(EventBase):
-    type_event_id: int
-    location_id: int
+    type_event: EventTypeSchemaRead
+    location: LocationRead
 
 
 class EventRead(Event):
@@ -32,9 +32,6 @@ class Age(BaseModel):
     name: str
 
 
-class EventTest(EventRead):
-    model_config = ConfigDict(from_attributes=True)
-    m2m: list[Age]
 
 
 class EventBulk(EventBase):
@@ -46,3 +43,5 @@ class EventBulk(EventBase):
 
 class EventBulkRead(EventBulk):
     id: int
+
+
