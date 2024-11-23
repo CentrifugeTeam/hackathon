@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+
+
 class EventTypeSchema(BaseModel):
     sport: str
     category: str
@@ -7,3 +9,6 @@ class EventTypeSchema(BaseModel):
 class EventTypeSchemaRead(EventTypeSchema):
     id: int
 
+
+class EventTypeSearch(BaseModel):
+    sport: str

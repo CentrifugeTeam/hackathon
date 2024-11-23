@@ -200,18 +200,17 @@ class ParserPDF:
         event_id = sport_block.text[0]
         event_name = sport_block.text[1]
         if len(sport_block.text) < 3:
-            logger.warning('sport block with text less then 3! %s', sport_block)
+            # logger.warning('sport block with text less then 3! %s', sport_block)
             reqs = []
 
         else:
             reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
 
         if len(sport_block.text) < 4:
-            logger.warning('sport block with text less then 4! %s', sport_block)
+            # logger.warning('sport block with text less then 4! %s', sport_block)
             competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
         else:
             competitions = []
-
 
         location = self._create_location(gen)
 
@@ -237,7 +236,8 @@ class ParserPDF:
             try:
                 res = self._parse_row(gen)
             except ParseRowException as e:
-                logger.exception('Exception in parsing rows with blocks %s', e.blocks, exc_info=e)
+                pass
+                # logger.exception('Exception in parsing rows with blocks %s', e.blocks, exc_info=e)
 
 
             else:

@@ -9,3 +9,5 @@ class AgeGroup(BaseModel):
 class AgeGroupRead(AgeGroup):
     id: int
 
+
+

@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from .location import LocationRead
 from .age_group import AgeGroupRead
 from .competition import CompetitionRead
@@ -17,11 +17,24 @@ class Event(EventBase):
     type_event_id: int
     location_id: int
 
+
 class EventRead(Event):
     id: int
 
+
 class EventSearch(BaseModel):
     name: str
+
+
+class Age(BaseModel):
+    id: int
+    name: str
+
+
+class EventTest(EventRead):
+    model_config = ConfigDict(from_attributes=True)
+    m2m: list[Age]
+
 
 class EventBulk(EventBase):
     location: LocationRead
@@ -32,4 +45,3 @@ class EventBulk(EventBase):
 
 class EventBulkRead(EventBulk):
     id: int
-

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 from fastapi import Request, Depends
 from fastapi_pagination import Page
 from fastapi_sqlalchemy_toolkit import ordering_depends
@@ -6,11 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from crud import Context
 from crud.openapi_responses import not_found_response
 from ...dependencies.session import get_session
+from ...schemas.competition import CompetitionSearch
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent, Competition, EventType
 from ...managers import BaseManager
-from ...schemas.event import EventBulkRead,  CompetitionRead
-
+from ...schemas.event import EventBulkRead, CompetitionRead
 
 competition_manager = BaseManager(Competition)
 event_manager = BaseManager(SportEvent)
@@ -18,14 +18,14 @@ event_manager = BaseManager(SportEvent)
 
 class CrudCompetitionAPIRouter(CrudAPIRouter):
     def _get_one(self, *args: Any, **kwargs: Any):
-        super()._get_one()
         schema = self.schema
 
-        # @self.get('/search')
-        # async def func(name: str | None = None, session: AsyncSession = Depends(get_session)) -> Page[EventSearch]:
-        #     return await event_manager.paginated_list(session, filter_expressions={
-        #         SportEvent.name.ilike: f'%{name}%' if name else None
-        #     })
+        @self.get('/search')
+        async def func(type: Literal['program', 'discipline'], name: str | None = None,
+                       session: AsyncSession = Depends(get_session)) -> Page[CompetitionSearch]:
+            return await self.manager.paginated_list(session, type=type, filter_expressions={
+                Competition.name.ilike: f'%{name}%' if name else None
+            })
 
         @self.get('/events/{id}',
                   responses={**not_found_response},
@@ -36,6 +36,8 @@ class CrudCompetitionAPIRouter(CrudAPIRouter):
                 session,
                 event_id=event.id,
             )
+
+        super()._get_one()
 
 
 crud_competition = CrudCompetitionAPIRouter(Context(schema=CompetitionRead,

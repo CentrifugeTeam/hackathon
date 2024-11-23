@@ -15,6 +15,7 @@ from sqlalchemy import select
 from ..parser_pdf.parser import ParserPDF
 from storage.db.models import FilePDF, File
 from ..utils import update_db
+from tempfile import NamedTemporaryFile, TemporaryFile
 
 logger = getLogger(__name__)
 
@@ -22,39 +23,22 @@ logger = getLogger(__name__)
 async def cron_update_calendar_table(ctx):
     logger.info('start fetching pdf')
     file_name = await fetch_pdf(ctx)
-    if not file_name:
-        logger.info('file pdf is up to day %s', file_name)
-        return
-    # check if file is updated
     logger.info('fetched pdf_file')
     maker = ctx['async_session_maker']
     maker: async_sessionmaker
     parser = ParserPDF()
     loop = asyncio.get_running_loop()
-    rows = parser.grap_rows(file_name)
-    await update_db(maker, rows)
-
-    # with ProcessPoolExecutor() as executor:
-    #     rows = await loop.run_in_executor(executor, parser.grap_rows, file_name)
-
-    logger.info('fetched rows %d', len(rows))
-
-    os.remove(file_name)
-    # logger.info('count rows %d', len(rows))
+    try:
+        rows = parser.grap_rows(file_name)
+        logger.info('fetched rows %d', len(rows))
+        await update_db(maker, rows)
+    finally:
+        os.remove(file_name)
 
 
 async def _fetch_pdf(ctx, url_to_pdf: str):
-    maker = ctx['async_session_maker']
-    # TODO create check table, тестовая таблица уже создана
-    # async with maker() as db_session:
-    #     db_session: AsyncSession
-    #     stmt = select(FilePDF).join(File, File.id == FilePDF.file_id).where(File.file_path == url_to_pdf)
-    #     file_pdf = await db_session.execute(stmt)
-
     async with aiohttp.ClientSession() as session:
         async with session.get(url_to_pdf, ssl=False) as response:
-            logger.info('got response %s', response)
-            response_date = response.headers['Date']
             file_name = str(uuid4())
             async with aiofiles.open(file_name, 'wb') as f:
                 while data := await response.content.read(1024 * 1024):
