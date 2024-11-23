@@ -10,7 +10,7 @@ import datetime
 from logging import getLogger
 from concurrent.futures import ProcessPoolExecutor
 import aiohttp
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy import select
 from ..parser_pdf.parser import ParserPDF
 from storage.db.models import FilePDF, File
@@ -25,6 +25,8 @@ async def cron_update_calendar_table(ctx):
         return
     # check if file is updated
     logger.info('fetched pdf_file')
+    maker = ctx['async_session_maker']
+    maker: async_sessionmaker
     parser = ParserPDF()
     loop = asyncio.get_running_loop()
     rows = parser.grap_rows(file_name)
