@@ -10,7 +10,7 @@ import { MainPage } from "../../pages/MainPage";
 export const AppRouter = () => {
   const routes = createRoutesFromElements(
     <Route path="/" element={<Layout />}>
-      <Route path="/" element={<MainPage />} />
+      <Route path="/home" element={<MainPage />} />
     </Route>
   );
 
