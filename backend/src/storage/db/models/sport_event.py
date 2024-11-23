@@ -18,6 +18,7 @@ class AgeGroup(IDMixin, Base):
     age_from: Mapped[int] = mapped_column(Integer, nullable=False)  # Минимальный возраст
     age_to: Mapped[int] = mapped_column(Integer, nullable=False)  # Максимальный возраст
     event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'))
+    sport: Mapped['SportEvent'] = relationship(back_populates='age_groups', cascade='delete')
 
 
 class EventType(IDMixin, Base):
@@ -32,6 +33,7 @@ class Competition(IDMixin, Base):
     type: Mapped[str] = mapped_column(String(length=80), nullable=False)  # program or discipline
     name: Mapped[str] = mapped_column(String(length=250), nullable=False)
     event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'))
+    sport: Mapped['SportEvent'] = relationship(back_populates='competitions', cascade='delete')
 
 
 class SportEvent(IDMixin, Base):
@@ -42,14 +44,14 @@ class SportEvent(IDMixin, Base):
     end_date: Mapped[date] = mapped_column(Date, nullable=False)  # Дата окончания
     participants_count: Mapped[int] = mapped_column(Integer, nullable=False)  # Количество участников
 
-    type_event_id: Mapped[int] = mapped_column(
-        ForeignKey('event_types.id', ondelete='CASCADE'))
+    type_event_id: Mapped[int] = mapped_column(ForeignKey('event_types.id', ondelete='CASCADE'))
     location_id: Mapped[int] = mapped_column(
         ForeignKey('locations.id', ondelete='CASCADE'))  # Связь с местом проведения
 
     type_event: Mapped[EventType] = relationship(back_populates='sports', cascade='delete')
     location: Mapped[Location] = relationship(back_populates='sports', cascade='delete')
-
+    age_groups: Mapped[list[AgeGroup]] = relationship(back_populates='sport', cascade='delete')
+    competitions: Mapped[list[Competition]] = relationship(back_populates='sport', cascade='delete')
 
 # TODO: Сделать схему бд совместимую с sqlalchemy-toolkit с фильтрацией (нужен только 1tomany) и за сидить данные, чтобы проверить
 # TODO: Сделать добавление таблиц в worker через pydantic model_dump и field_serializers

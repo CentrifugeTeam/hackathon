@@ -27,9 +27,9 @@ async def cron_update_calendar_table(ctx):
     logger.info('fetched pdf_file')
     parser = ParserPDF()
     loop = asyncio.get_running_loop()
-
-    with ProcessPoolExecutor() as executor:
-        rows = await loop.run_in_executor(executor, parser.grap_rows, file_name)
+    rows = parser.grap_rows(file_name)
+    # with ProcessPoolExecutor() as executor:
+    #     rows = await loop.run_in_executor(executor, parser.grap_rows, file_name)
 
     logger.info('fetched rows %d', len(rows))
 

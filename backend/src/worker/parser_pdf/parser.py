@@ -113,7 +113,7 @@ class ParserPDF:
 				save_event_and_related_data(self.session, row)
 			# logger.info('finished proccessing page %d', page.number)
 
-		logger.info('end parcing')
+		logger.info(f'end parcing')
 		return result
 
 	def _start_parse_pdf(self, gen: Generator):
