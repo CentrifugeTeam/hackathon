@@ -6,20 +6,28 @@ interface MultiSelectDropdownProps {
   label: string;
   value: string[];
   setValue: (value: string[]) => void;
-  options: string[]; // Добавляем options, который передается как пропс
+  options: string[];
+  fetchMoreOptions: () => void;
+  hasNextPage: boolean;
+  onSearch: (query: string) => void;
 }
 
 export const MultiSelectDropdown = ({
   label,
   value,
   setValue,
-  options, // Пропс options
+  options,
+  fetchMoreOptions,
+  hasNextPage,
+  onSearch,
 }: MultiSelectDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [localValue, setLocalValue] = useState<string[]>(value);
-  const [searchQuery, setSearchQuery] = useState(""); // Состояние для поискового запроса
-  const [isEditing, setIsEditing] = useState(false); // Состояние для редактирования (при клике на span)
-  const dropdownRef = useRef<HTMLDivElement>(null); // Реф для отслеживания кликов вне области
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     setLocalValue(value);
@@ -29,14 +37,27 @@ export const MultiSelectDropdown = ({
     setValue(localValue);
   }, [localValue, setValue]);
 
+  useEffect(() => {
+    setFilteredOptions(
+      options.filter((option) =>
+        option.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [options, searchQuery]);
+
+  useEffect(() => {
+    onSearch(searchQuery);
+    setFilteredOptions([]); // Очищаем фильтрованные опции при изменении поискового запроса
+  }, [searchQuery, onSearch]);
+
   const handleClickOutside = (event: MouseEvent) => {
     if (
       dropdownRef.current &&
       !dropdownRef.current.contains(event.target as Node) &&
-      !isEditing // Если мы редактируем, меню не закрывается
+      !isEditing
     ) {
       setIsOpen(false);
-      setIsEditing(false); // Если кликнули вне, скрыть поле редактирования
+      setIsEditing(false);
     }
   };
 
@@ -50,7 +71,7 @@ export const MultiSelectDropdown = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, isEditing]); // Следим за состоянием isEditing
+  }, [isOpen, isEditing]);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -64,7 +85,8 @@ export const MultiSelectDropdown = ({
 
   const handleClear = () => {
     setLocalValue([]);
-    setSearchQuery(""); // Очистить запрос поиска
+    setSearchQuery("");
+    setFilteredOptions([]); // Очищаем фильтрованные опции при очистке
   };
 
   const renderSelectedItems = () => {
@@ -80,22 +102,25 @@ export const MultiSelectDropdown = ({
     );
   };
 
-  // Фильтрация опций по поисковому запросу
-  const filteredOptions = options.filter((option) =>
-    option.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Обработчик для старта редактирования
   const handleEdit = () => {
     setIsEditing(true);
-    setSearchQuery(""); // Очистить текущий запрос при редактировании
+    setSearchQuery("");
+    setFilteredOptions([]); // Очищаем фильтрованные опции при начале редактирования
+  };
+
+  const handleScroll = () => {
+    if (menuRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = menuRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 5 && hasNextPage) {
+        fetchMoreOptions();
+      }
+    }
   };
 
   return (
     <div className={styles.dropdown} ref={dropdownRef}>
       <label className={styles.label}>{label}</label>
       <div className={styles.select} onClick={toggleDropdown}>
-        {/* Если редактируем, показываем поле ввода */}
         {isEditing ? (
           <input
             type="text"
@@ -116,7 +141,7 @@ export const MultiSelectDropdown = ({
         </span>
       </div>
       {isOpen && (
-        <ul className={styles.menu}>
+        <ul className={styles.menu} ref={menuRef} onScroll={handleScroll}>
           <li className={styles.clear} onClick={handleClear}>
             Очистить выбор
           </li>
