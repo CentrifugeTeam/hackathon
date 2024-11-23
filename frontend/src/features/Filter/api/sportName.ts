@@ -1,23 +1,23 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import api from "../../../shared/api/base";
 
-export interface IEvent {
-  name: string;
+export interface ISportEvent {
+  sport: string;
 }
 
-export interface IEventResponse {
-  items: IEvent[];
+export interface ISportEventResponse {
+  items: ISportEvent[];
   total: number;
   page: number;
   size: number;
   pages: number;
 }
 
-export const fetchEvents = async (
+export const fetchSportEvents = async (
   page: number | undefined,
   size: number | undefined,
   name?: string
-): Promise<IEventResponse> => {
+): Promise<ISportEventResponse> => {
   const params: { page?: number; size?: number; name?: string } = {};
   if (name) {
     params.name = name;
@@ -26,11 +26,11 @@ export const fetchEvents = async (
     params.size = size;
   }
 
-  const response = await api.get(`/events/search`, { params });
+  const response = await api.get(`/event_of_types/search`, { params });
 
   return {
     items: response.data.items.map((item: any) => ({
-      name: item.name,
+      sport: item.sport,
     })),
     total: response.data.total,
     page: response.data.page,
@@ -39,15 +39,15 @@ export const fetchEvents = async (
   };
 };
 
-export const useEvents = (
+export const useSportEvents = (
   initialPage: number = 1,
   size: number = 10,
   name?: string
 ) => {
-  return useInfiniteQuery<IEventResponse>({
-    queryKey: ["events", name],
+  return useInfiniteQuery<ISportEventResponse>({
+    queryKey: ["sportEvents", name],
     queryFn: ({ pageParam = initialPage }) =>
-      fetchEvents(
+      fetchSportEvents(
         name ? undefined : (pageParam as number),
         name ? undefined : size,
         name
