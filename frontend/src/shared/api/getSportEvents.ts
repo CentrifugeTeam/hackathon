@@ -12,6 +12,48 @@
 // 	}
 // }
 
+// import axios from "axios";
+// import BASE_URL from "./base";
+// import { ILocation } from "../interfaces";
+
+// export const getLocationOfSportEvent = async (id: number) => {
+// 	try {
+// 		const response = await axios.get<ILocation>(`${BASE_URL}/ages/${id}`);
+// 		return response.data;
+// 	} catch (error) {
+// 		console.error("Произошла ошибка при получении спротивных мероприятий:", error);
+//     throw error;
+// 	}
+// }
+
+// import axios from "axios";
+// import BASE_URL from "./base";
+// import { IAges } from "../interfaces";
+
+// export const getAgesOfSportEvent = async (id: number) => {
+// 	try {
+// 		const response = await axios.get<IAges>(`${BASE_URL}/ages/${id}`);
+// 		return response.data;
+// 	} catch (error) {
+// 		console.error("Произошла ошибка при получении спротивных мероприятий:", error);
+//     throw error;
+// 	}
+// }
+
+// import axios from "axios";
+// import BASE_URL from "./base";
+// import { ICompetitions } from "../interfaces";
+
+// export const getCompetitionsOfSportEvent = async (id: number) => {
+// 	try {
+// 		const response = await axios.get<ICompetitions>(`${BASE_URL}/ages/${id}`);
+// 		return response.data;
+// 	} catch (error) {
+// 		console.error("Произошла ошибка при получении спротивных мероприятий:", error);
+//     throw error;
+// 	}
+// }
+
 import {
   IAges,
   ILocation,
