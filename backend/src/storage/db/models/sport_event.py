@@ -33,6 +33,7 @@ class Competition(IDMixin, Base):
     name: Mapped[str] = mapped_column(String(length=250), nullable=False)
     event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'))
     sport: Mapped['SportEvent'] = relationship(back_populates='competitions', cascade='delete')
+    __table_args__ = (UniqueConstraint('type', 'name', name='unique_type_and_name'),)
 
 
 class SportEvent(Base):

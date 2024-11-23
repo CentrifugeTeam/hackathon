@@ -53,6 +53,7 @@ class CrudEventAPIRouter(CrudAPIRouter):
             sports = sports if sports is None else sports.split(';')
             categories = categories if categories is None else categories.split(';')
             cities = cities if cities is None else cities.split(';')
+            competitions = competitions if competitions is None else competitions.split(';')
 
             return await self.manager.paginated_list(session,
                                                      participants_count=participants_count,
@@ -82,9 +83,9 @@ class CrudEventAPIRouter(CrudAPIRouter):
         )
         async def func(request: Request, id: int, session: AsyncSession = Depends(self.get_session)):
             return await self.manager.get_or_404(session, id=id, options=[joinedload(SportEvent.location),
-                                                                   joinedload(SportEvent.age_groups),
-                                                                   joinedload(SportEvent.competitions),
-                                                                   joinedload(SportEvent.type_event)])
+                                                                          joinedload(SportEvent.age_groups),
+                                                                          joinedload(SportEvent.competitions),
+                                                                          joinedload(SportEvent.type_event)])
 
 
 crud_events = CrudEventAPIRouter(Context(schema=EventBulkRead,

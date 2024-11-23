@@ -133,11 +133,12 @@ class ParserPDF:
                 competition = competition[2:]
 
             competition = competition.strip()
+
             if name == 'КЛАСС':
                 items.append(CompetitionSchema(name=competition, type='program'))
             elif name.lower().startswith('дисциплин'):
                 items.append(CompetitionSchema(name=competition, type='discipline'))
-            elif name == competition:
+            elif name == competition and name != '':
                 items.append(CompetitionSchema(name=competition, type='discipline'))
 
         return items
@@ -241,7 +242,7 @@ class ParserPDF:
             try:
                 res = self._parse_row(gen)
             except ParseRowException as e:
-                pass
+                raise e
                 # logger.exception('Exception in parsing rows with blocks %s', e.blocks, exc_info=e)
 
 
