@@ -52,6 +52,8 @@ class CrudEventAPIRouter(CrudAPIRouter):
                                                          EventType.category.in_: categories,
                                                          Location.city.in_: cities,
                                                          Location.region.in_: regions,
+                                                         SportEvent.start_date.__ge__: start_date,
+                                                         # SportEvent.start_date.__le__: start_date,
 
                                                      },
                                                      options=[joinedload(SportEvent.location),
