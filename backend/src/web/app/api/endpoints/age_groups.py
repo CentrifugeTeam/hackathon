@@ -9,7 +9,7 @@ from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent,  AgeGroup
 from ...managers import BaseManager
-from ...schemas.calendar_plan import EventRead, AgeGroupRead
+from ...schemas.event import EventBulkRead, AgeGroupRead
 
 manager = BaseManager(AgeGroup)
 event_manager = BaseManager(SportEvent)
@@ -32,8 +32,8 @@ class CrudAgeAPIRouter(CrudAPIRouter):
 
 
 crud_ages = CrudAgeAPIRouter(Context(schema=AgeGroupRead,
-                                     update_schema=EventRead,
-                                     create_schema=EventRead,
+                                     update_schema=EventBulkRead,
+                                     create_schema=EventBulkRead,
                                      manager=manager, get_session=get_session,
                                      create_route=False,
                                      update_route=False,

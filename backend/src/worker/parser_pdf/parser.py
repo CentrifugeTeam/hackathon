@@ -257,7 +257,7 @@ class ParserPDF:
                     elif blocks[1].text[0] in self._key_words_for_choice_sport:
                         self._current_sport = blocks[0].text[0]
                         self._current_category = blocks[1].text[0]
-                    # return self._handle_category_sport_row(gen)
+
                 elif len(blocks) == 1 and blocks[0].text[0].startswith('Стр'):
                     return None
 

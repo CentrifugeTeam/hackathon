@@ -15,4 +15,4 @@ COPY src /src
 WORKDIR /src
 ENV PATH="/opt/venv/bin:$PATH"
 ENV PYTHONPATH='/src:$PYTHONPATH'
-CMD ["saq", "worker.main.settings", "--verbose",  "--web"]
+CMD ["saq", "worker.main.settings", "--web"]

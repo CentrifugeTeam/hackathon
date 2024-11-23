@@ -11,7 +11,7 @@ from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType
 from ...managers import BaseManager
-from ...schemas.calendar_plan import EventRead, LocationRead, AgeGroupRead
+from ...schemas.event import EventBulkRead, EventBulk, EventRead, EventSearch
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -29,16 +29,21 @@ class CrudEventAPIRouter(CrudAPIRouter):
     def _get_all(self, *args: Any, **kwargs: Any):
         schema = self.schema
 
+        @self.get('/search')
+        async def func(name: str | None = None, session: AsyncSession = Depends(get_session)) -> Page[EventSearch]:
+            return await event_manager.paginated_list(session, filter_expressions={
+                SportEvent.name.ilike: f'%{name}%' if name else None
+            })
+
         @self.get('/')
-        async def func(request: Request,
-                       # order_by=ordering_depends(children_ordering_fields),
-                       sports: str | None = None,
-                       categories: str | None = None,
-                       cities: str | None = None,
-                       regions: str | None = None,
-                       age_names: str | None = None,
-                       age_groups: str | None = None,
-                       session: AsyncSession = Depends(self.get_session)) -> Page[schema]:
+        async def func(  # order_by=ordering_depends(children_ordering_fields),
+                sports: str | None = None,
+                categories: str | None = None,
+                cities: str | None = None,
+                regions: str | None = None,
+                age_names: str | None = None,
+                age_groups: str | None = None,
+                session: AsyncSession = Depends(self.get_session)) -> Page[schema]:
             sports = sports if sports is None else sports.split(';')
             categories = categories if categories is None else categories.split(';')
             cities = cities if cities is None else cities.split(';')
@@ -46,7 +51,6 @@ class CrudEventAPIRouter(CrudAPIRouter):
             age_names = age_names if age_names is None else age_names.split(';')
             age_groups = age_groups if age_groups is None else age_groups.split(';')
 
-            # logger.info('order by %s', order_by)
             return await self.manager.paginated_list(session,
                                                      filter_expressions={
                                                          EventType.sport.in_: sports,
@@ -55,58 +59,20 @@ class CrudEventAPIRouter(CrudAPIRouter):
                                                          Location.region.in_: regions,
                                                          # AgeGroup.
                                                      },
-                                                     options=[joinedload(SportEvent.location), joinedload(SportEvent.age_groups),
-                                                              joinedload(SportEvent.competitions), joinedload(SportEvent.type_event)]
+                                                     options=[joinedload(SportEvent.location),
+                                                              joinedload(SportEvent.age_groups),
+                                                              joinedload(SportEvent.competitions),
+                                                              joinedload(SportEvent.type_event)]
                                                      # order_by=order_by,
                                                      )
 
 
-crud_events = CrudEventAPIRouter(Context(schema=EventRead,
-                                         update_schema=EventRead,
-                                         create_schema=EventRead,
+crud_events = CrudEventAPIRouter(Context(schema=EventBulkRead,
+                                         update_schema=EventBulkRead,
+                                         create_schema=EventBulkRead,
                                          manager=event_manager, get_session=get_session,
                                          create_route=False,
                                          update_route=False,
                                          delete_one_route=False,
                                          delete_all_route=False,
                                          ))
-
-location_manager = BaseManager(Location)
-crud_locations = CrudAPIRouter(Context(schema=LocationRead,
-                                       update_schema=EventRead,
-                                       create_schema=EventRead,
-                                       manager=location_manager, get_session=get_session,
-                                       create_route=False,
-                                       update_route=False,
-                                       delete_one_route=False,
-                                       delete_all_route=False,
-                                       ))
-
-event_types_manager = BaseManager(EventType)
-
-
-class CrudEventTypesAPIRouter(CrudAPIRouter):
-    def _get_one(self, *args: Any, **kwargs: Any):
-        super()._get_one()
-        schema = self.schema
-
-        @self.get('/events/{id}',
-                  responses={**not_found_response},
-                  response_model=list[self.schema])
-        async def func(id: int, session: AsyncSession = Depends(self.get_session)):
-            event = await event_manager.get_or_404(session, id=id)
-            return await self.manager.list(
-                session,
-                event_id=event.id,
-            )
-
-
-crud_event_types = CrudEventTypesAPIRouter(Context(schema=LocationRead,
-                                                   update_schema=EventRead,
-                                                   create_schema=EventRead,
-                                                   manager=event_types_manager, get_session=get_session,
-                                                   create_route=False,
-                                                   update_route=False,
-                                                   delete_one_route=False,
-                                                   delete_all_route=False,
-                                                   ))

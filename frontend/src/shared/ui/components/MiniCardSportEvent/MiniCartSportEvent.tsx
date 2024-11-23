@@ -33,7 +33,7 @@ export const MiniCartSportEvent: React.FC<CartSportEventProps> = ({
       <h2 className={styles.eventName}>{data.name}</h2>
 
       <h4 className={`${styles.eventText} ${styles.eventSubTitle}`}>
-        {data.name} МЕРОПРИЯТИЕ
+        {data.name}
       </h4>
 
       {/* Вид спорта */}

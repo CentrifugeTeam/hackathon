@@ -1,3 +1,5 @@
+from fastapi_pagination import Page
+
 from crud import CRUDTemplate
 from ..dependencies.user import get_current_user, Permission, get_user_principals, AclBatchPermission
 from crud.openapi_responses import (
@@ -12,6 +14,7 @@ Resource = TypeVar('Resource')
 
 
 class CrudAPIRouter(CRUDTemplate):
+
 
     def _get_all(self, *args: Any, **kwargs: Any):
 
@@ -95,3 +98,6 @@ class CrudAPIRouter(CRUDTemplate):
             obj_in_db = await self.manager.get_or_404(session, id=id)
             await self.manager.delete(session, obj_in_db)
             return
+
+
+
