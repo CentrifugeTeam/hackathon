@@ -6,7 +6,7 @@ from sqlalchemy.orm import DeclarativeBase
 from typing import Generic, TypeVar
 
 from web.app.schemas.calendar_plan import Location, Competition
-from .parser_pdf.parser import Row, EventTypeSchema, AgeGroup
+from .parser_pdf.parser import Row, EventTypeSchema, AgeGroupSchema
 from storage.db.models import EventType, SportEvent
 
 DBModel = TypeVar('DBModel', bound=DeclarativeBase)
@@ -17,12 +17,12 @@ async def update_db(ctx, rows: list[Row]):
     async with sessionmaker() as session:
         session: AsyncSession
         for row in rows:
-            await _handle_row(session, row)
+            await save_event_and_related_data(session, row)
+            # await _handle_row(session, row)
 
 
 async def _handle_row(session, row: Row):
     obj = await _create_if_dont_exist(session, row.model_dump(by_alias=True), EventTypeSchema)
-
 
 
 async def _create_if_dont_exist[DBModel](session: AsyncSession, _dict: dict, model: type[DBModel]) -> DBModel:
@@ -39,9 +39,6 @@ async def _create_if_dont_exist[DBModel](session: AsyncSession, _dict: dict, mod
         await session.commit()
 
     return obj
-
-
-
 
 
 async def save_event_and_related_data(session: AsyncSession, row: Row):
@@ -96,7 +93,7 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
         # Сохраняем возрастные группы (AgeGroup)
         for req in row.reqs:
             age_group_data = req
-            age_group = AgeGroup(
+            age_group = AgeGroupSchema(
                 name=age_group_data.name,
                 age_from=age_group_data.start,
                 age_to=age_group_data.end,

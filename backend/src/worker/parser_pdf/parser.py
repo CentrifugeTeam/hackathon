@@ -26,29 +26,29 @@ class Block:
     num2: int
 
 
-class AgeGroup(BaseModel):
+class AgeGroupSchema(BaseModel):
     name: str
     start: int | None = None
     end: int | None = None
 
 
-class EventType(BaseModel):
+class EventTypeSchema(BaseModel):
     sport: str
     category: str
 
 
-class Location(BaseModel):
+class LocationSchema(BaseModel):
     country: str
     region: str | None
     city: str
 
 
-class Competition(BaseModel):
+class CompetitionSchema(BaseModel):
     name: str
     type: str
 
 
-class Event(BaseModel):
+class EventSchema(BaseModel):
     id: int
     name: str
     start_date: date
@@ -72,11 +72,11 @@ class Event(BaseModel):
 
 
 class Row(BaseModel):
-    event_type: EventType
-    event: Event
-    location: Location
-    reqs: list[AgeGroup]
-    competitions: list[Competition]
+    event_type: EventTypeSchema
+    event: EventSchema
+    location: LocationSchema
+    reqs: list[AgeGroupSchema]
+    competitions: list[CompetitionSchema]
 
 
 class ParserPDF:
@@ -129,7 +129,7 @@ class ParserPDF:
     def _handle_default_row(self, gen: Generator, blocks: tuple[Block, Block]) -> Row:
         return self._handle_after_date_block(gen, *blocks)
 
-    def _convert_to_programs_and_disciplines(self, text: str) -> list[Competition]:
+    def _convert_to_programs_and_disciplines(self, text: str) -> list[CompetitionSchema]:
         items = []
 
         for block in text.split(','):
@@ -142,17 +142,17 @@ class ParserPDF:
 
             competition = competition.strip()
             if name == 'КЛАСС':
-                items.append(Competition(name=competition, type='program'))
+                items.append(CompetitionSchema(name=competition, type='program'))
             elif name.lower().startswith('дисциплин'):
-                items.append(Competition(name=competition, type='discipline'))
+                items.append(CompetitionSchema(name=competition, type='discipline'))
             elif name == competition:
-                items.append(Competition(name=competition, type='discipline'))
+                items.append(CompetitionSchema(name=competition, type='discipline'))
 
         return items
 
     def _convert_to_person_requirements(self, text: str):
         words = text.split(' ')
-        people: list[AgeGroup] = []
+        people: list[AgeGroupSchema] = []
         start = None
         end = None
         for i, word in enumerate(words):
@@ -178,7 +178,7 @@ class ParserPDF:
             elif word == 'до':
                 end = int(words[i + 1])
             else:
-                people.append(AgeGroup(name=word))
+                people.append(AgeGroupSchema(name=word))
 
         for person in people:
             person.start = start
@@ -189,9 +189,9 @@ class ParserPDF:
         city_block = next(gen)
         split = city_block.text[1].split(',')
         if len(split) == 2:
-            event_map = Location(country=city_block.text[0], region=split[0], city=split[1].strip(' '))
+            event_map = LocationSchema(country=city_block.text[0], region=split[0], city=split[1].strip(' '))
         else:
-            event_map = Location(country=city_block.text[0], region=None, city=split[0].strip(' '))
+            event_map = LocationSchema(country=city_block.text[0], region=None, city=split[0].strip(' '))
         return event_map
 
     def _handle_name_sport_row(self, gen: Generator, sport_block: Block) -> Row:
@@ -214,12 +214,12 @@ class ParserPDF:
         location = self._create_event_map(gen)
 
         count_block = next(gen)
-        event = Event(
+        event = EventSchema(
             id=event_id, name=event_name, start_date=date_block.text[0], end_date=date_block.text[1],
             count_people=count_block.text[0]
         )
-        event_type = EventType(sport=self._current_sport,
-                               category=self._current_category, )
+        event_type = EventTypeSchema(sport=self._current_sport,
+                                     category=self._current_category, )
 
         row = Row(
             event_type=event_type,

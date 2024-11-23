@@ -53,18 +53,9 @@ class EventBase(BaseModel):
 class Event(EventBase):
     type_event_id: int
     location_id: int
-    age_group_id: int
 
 
 class EventRead(Event):
     id: int
 
 
-class CalendarRequest(BaseModel):
-
-    sports: list[str] | None = None
-    categories: list[str] | None = None
-    cities: list[str] | None = None
-    regions: list[str] | None = None
-    age_names: list[str]
-    age_groups: list[str] | None = None

@@ -10,4 +10,5 @@ api.include_router(events.crud_events, prefix='/events', tags=['events'])
 api.include_router(age_groups.crud_ages, prefix='/ages', tags=['ages'])
 api.include_router(events.crud_locations, prefix='/locations', tags=['locations'])
 api.include_router(competitions.crud_competition, prefix='/competitions', tags=['competitions'])
+api.include_router(events.crud_event_types, prefix='/event_types', tags=['event_types'])
 
