@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pydantic import BaseModel, validator, field_validator, Field
 from logging import getLogger
 
+from worker.parser_pdf.exception import ParseRowException
+
 logger = getLogger(__name__)
 
 
@@ -96,12 +98,9 @@ class ParserPDF:
 
         for page in pdf[1:]:
             page: Page
-            # logger.info('start proccessing page %d', page.number)
             gen = self._create_generator_for_page(page)
             for row in self._parse_rows(gen):
                 result.append(row)
-            # сохраняем данные
-        # logger.info('finished proccessing page %d', page.number)
 
         logger.info(f'end parcing')
         return result
@@ -112,7 +111,6 @@ class ParserPDF:
             if len(block.text) == 1 and block.text[0] in self._key_words_for_choice_sport:
                 self._current_category = block.text[0]
                 self._current_sport = self._current_sport[0]
-                # logger.info('found first categories %s and sports %s', self._current_category, self._current_sport)
                 return self._parse_rows(gen)
             else:
                 self._current_sport = block.text
@@ -184,11 +182,11 @@ class ParserPDF:
         split = city_block.text[1].split(',')
         if len(split) == 2:
             split[1]: str
-            city = split[1].strip(' ').city.removeprefix('Город ').removeprefix('г. ')
+            city = split[1].removeprefix('Город').removeprefix('г.').removeprefix('г').strip(' ')
             event_map = LocationSchema(country=city_block.text[0], region=split[0], city=city)
         else:
             split[0]: str
-            city = split[0].strip(' ').city.removeprefix('Город ').removeprefix('г. ')
+            city = split[0].removeprefix('Город').removeprefix('г.').removeprefix('г').strip(' ')
             event_map = LocationSchema(country=city_block.text[0], region=None, city=city)
         return event_map
 
@@ -201,13 +199,19 @@ class ParserPDF:
                                  date_block: Block):
         event_id = sport_block.text[0]
         event_name = sport_block.text[1]
-        if len(sport_block.text) < 4:
-            # logger.warning('sport block with text less then 2! %s', sport_block)
+        if len(sport_block.text) < 3:
+            logger.warning('sport block with text less then 3! %s', sport_block)
             reqs = []
-            competitions = []
+
         else:
             reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
+
+        if len(sport_block.text) < 4:
+            logger.warning('sport block with text less then 4! %s', sport_block)
             competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
+        else:
+            competitions = []
+
 
         location = self._create_location(gen)
 
@@ -226,21 +230,16 @@ class ParserPDF:
             event=event,
             competitions=competitions,
         )
-        # сохраняем данные
-        # logger.info('row %s', row)
         return row
-
-    def _handle_category_sport_row(self, gen: Generator) -> Row:
-        # logger.info('row %s', row)
-        pass
 
     def _parse_rows(self, gen: Generator) -> Row:
         while True:
             try:
                 res = self._parse_row(gen)
-            except Exception as e:
-                pass
-            # logger.exception('Exception in parsing rows', exc_info=e)
+            except ParseRowException as e:
+                logger.exception('Exception in parsing rows with blocks %s', e.blocks, exc_info=e)
+
+
             else:
                 if res is None:
                     break
@@ -248,21 +247,24 @@ class ParserPDF:
 
     def _parse_row(self, gen: Generator) -> Row | None:
         for blocks in batched(gen, 2):
-            if len(blocks[0].text) == 1 and len(blocks) == 2:
-                # если категория первая в списке, а второе как обычное поле
-                if blocks[0].text[0] in self._key_words_for_choice_sport:
-                    self._current_category = blocks[0].text[0]
-                    return self._handle_name_sport_row(gen, blocks[1])
-                # если название состава первая в списке и второе соответственно категория
-                elif blocks[1].text[0] in self._key_words_for_choice_sport:
-                    self._current_sport = blocks[0].text[0]
-                    self._current_category = blocks[1].text[0]
-                # return self._handle_category_sport_row(gen)
-            elif len(blocks) == 1 and blocks[0].text[0].startswith('Стр'):
-                return None
+            try:
+                if len(blocks[0].text) == 1 and len(blocks) == 2:
+                    # если категория первая в списке, а второе как обычное поле
+                    if blocks[0].text[0] in self._key_words_for_choice_sport:
+                        self._current_category = blocks[0].text[0]
+                        return self._handle_name_sport_row(gen, blocks[1])
+                    # если название состава первая в списке и второе соответственно категория
+                    elif blocks[1].text[0] in self._key_words_for_choice_sport:
+                        self._current_sport = blocks[0].text[0]
+                        self._current_category = blocks[1].text[0]
+                    # return self._handle_category_sport_row(gen)
+                elif len(blocks) == 1 and blocks[0].text[0].startswith('Стр'):
+                    return None
 
-            elif len(blocks) == 2:
-                return self._handle_default_row(gen, blocks)
+                elif len(blocks) == 2:
+                    return self._handle_default_row(gen, blocks)
+            except Exception as e:
+                raise ParseRowException(blocks) from e
 
     def _parse_raw_data(self, data: tuple) -> Block:
         block = Block(*data)

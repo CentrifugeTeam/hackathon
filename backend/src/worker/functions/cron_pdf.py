@@ -23,6 +23,7 @@ async def cron_update_calendar_table(ctx):
     logger.info('start fetching pdf')
     file_name = await fetch_pdf(ctx)
     if not file_name:
+        logger.info('file pdf is up to day %s', file_name)
         return
     # check if file is updated
     logger.info('fetched pdf_file')
