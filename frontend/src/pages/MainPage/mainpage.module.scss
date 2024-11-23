@@ -15,3 +15,41 @@
   gap: 20px; /* Расстояние между карточками */
   margin-top: 20px;
 }
+
+.pagination {
+  display: flex;
+  font-family: "Evolventa", Arial, sans-serif;
+
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.paginationButton {
+  background-color: white;
+  color: #3169f2;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 20px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border: 1px solid #3169f2;
+}
+
+.paginationButton:hover {
+  background-color: #3169f2;
+  color: white;
+}
+
+.paginationButton:disabled {
+  background-color: #d3d3d3;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: 16px;
+  margin: 0 10px;
+}
