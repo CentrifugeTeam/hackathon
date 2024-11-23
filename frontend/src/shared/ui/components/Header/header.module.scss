@@ -7,7 +7,12 @@
   .content {
     width: 1440px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
+
+    .logo {
+      margin-left: 30px;
+    }
 
     .elements {
       display: flex;
@@ -18,32 +23,62 @@
         font-family: "Evolventa", Arial, sans-serif;
         font-size: 16px;
         transition: 0.2s;
-      }
 
-      .elem:hover {
-        color: #3169f2;
-        cursor: pointer;
+        &:hover {
+          color: #3169f2;
+          cursor: pointer;
+        }
       }
     }
 
-    .bell_block {
-      margin-left: auto;
-      margin-right: 30px;
+    .mobileMenuAndBell {
+			cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      min-width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background-color: #3169f2;
-      transition: font-size 0.1s ease, transform 0.1s ease;
-      cursor: pointer;
+			z-index: 999999;
 
-      img {
-        margin-left: -0.5px;
-        width: 24px;
-        height: 24px;
+      .bell_block {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: #3169f2;
+        transition: font-size 0.1s ease, transform 0.1s ease;
+				margin-right: 30px;
+				margin-left: 10px;
+
+        img {
+          width: 24px;
+          height: 24px;
+        }
       }
     }
   }
+}
+
+@media (max-width: 768px) {
+  .elem {
+    display: none;
+  }
+
+  .mobileMenu {
+    display: block;
+  }
+
+	.hr {
+		display: block;
+		color: #3169F2;
+	}
+}
+
+@media (min-width: 768px) {
+  .mobileMenu {
+    display: none;
+  }
+
+	.hr {
+		display: none;
+	}
 }

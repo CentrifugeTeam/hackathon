@@ -8,7 +8,7 @@ import { News } from "../../shared/ui/components/News";
 
 export const MainPage = () => {
   const [page, setPage] = useState(1); // Страница по умолчанию
-  const size = 20; // Размер страницы
+  const size = 21; // Размер страницы
 
   // Используем хук для запроса данных
   const { data, isLoading, error } = useSportEvents(page, size);

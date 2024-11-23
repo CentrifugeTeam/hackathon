@@ -11,9 +11,8 @@
 
 .miniCards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Три столбца одинаковой ширины */
-  gap: 20px; /* Расстояние между карточками */
-  margin-top: 20px;
+  grid-template-columns: repeat(3, 1fr);
+	grid-auto-rows: minmax(200px, auto);
 }
 
 .pagination {
