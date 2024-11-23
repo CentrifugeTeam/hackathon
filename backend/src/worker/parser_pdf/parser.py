@@ -93,17 +93,14 @@ class ParserPDF:
         result = []
         for row in self._start_parse_pdf(gen):
             result.append(row)
-        logger.info('finished proccessing page 1')
 
         for page in pdf[1:]:
             page: Page
-            # logger.info('start proccessing page %d', page.number)
             gen = self._create_generator_for_page(page)
             for row in self._parse_rows(gen):
                 result.append(row)
-            # logger.info('finished proccessing page %d', page.number)
 
-        logger.info('end parcing')
+        logger.info(f'end parcing')
         return result
 
     def _start_parse_pdf(self, gen: Generator):
