@@ -9,6 +9,7 @@ import { ChooseAgeInput } from "../../../../shared/ui/components/ChooseAgeInput"
 import { ChooseMemberCount } from "../../../../shared/ui/components/ChooseMemberCount";
 import { ChooseDateInput } from "../../../../shared/ui/components/ChooseDateInput";
 import { useSexEvents } from "../../api/sexName";
+import { useCompetitionEvents } from "../../api/competitionName";
 
 export const FilterForm = () => {
   const [isFilterVisible, setFilterVisible] = useState(false);
@@ -30,6 +31,8 @@ export const FilterForm = () => {
   const [maxAge, setMaxAge] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [memberCount, setMemberCount] = useState<string>("");
+  const [programQuery, setProgramQuery] = useState<string>("");
+  const [disciplineQuery, setDisciplineQuery] = useState<string>("");
 
   const {
     data: eventData,
@@ -57,6 +60,19 @@ export const FilterForm = () => {
 
   const { data: sexEventData } = useSexEvents(sexQuery);
 
+  const { data: programData } = useCompetitionEvents(
+    "program",
+    1,
+    30,
+    programQuery
+  );
+  const { data: disciplineData } = useCompetitionEvents(
+    "discipline",
+    1,
+    30,
+    disciplineQuery
+  );
+
   const toggleFilter = () => {
     setFilterVisible(!isFilterVisible);
   };
@@ -67,7 +83,7 @@ export const FilterForm = () => {
     setMultiSelectValues3([]);
     setMultiSelectValues4([]);
     setMultiSelectValues5([]);
-    setSearchQuery(""); // Очистить поисковый запрос
+    setSearchQuery("");
     setSex([]);
     setMinAge("");
     setMaxAge("");
@@ -91,6 +107,16 @@ export const FilterForm = () => {
 
   const sexOptions = sexEventData
     ? sexEventData.items.map((item) => item.name)
+    : [];
+
+  const programOptions = programData
+    ? programData.pages.flatMap((page) => page.items.map((item) => item.name))
+    : [];
+
+  const disciplineOptions = disciplineData
+    ? disciplineData.pages.flatMap((page) =>
+        page.items.map((item) => item.name)
+      )
     : [];
 
   return (
@@ -138,10 +164,10 @@ export const FilterForm = () => {
           label="Дисциплина"
           value={multiSelectValues3}
           setValue={setMultiSelectValues3}
-          options={["Дисциплина 1", "Дисциплина 2"]}
+          options={disciplineOptions}
           fetchMoreOptions={() => {}}
           hasNextPage={false}
-          onSearch={() => {}} // Пустая функция
+          onSearch={setDisciplineQuery} // Передаем функцию обновления поискового запроса
         />
         <MultiSelectDropdown
           label="Место проведения"
@@ -156,10 +182,10 @@ export const FilterForm = () => {
           label="Программа"
           value={multiSelectValues5}
           setValue={setMultiSelectValues5}
-          options={["Программа 1", "Программа 2"]}
+          options={programOptions}
           fetchMoreOptions={() => {}}
           hasNextPage={false}
-          onSearch={() => {}} // Пустая функция
+          onSearch={setProgramQuery} // Передаем функцию обновления поискового запроса
         />
 
         <div className={styles.inputs_flex}>
