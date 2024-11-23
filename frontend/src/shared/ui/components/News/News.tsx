@@ -1,8 +1,23 @@
 import styles from "./news.module.scss";
+import { useEffect, useState } from "react";
 import FirstImage from "../../../../assets/Rectangle 43.png";
 import SecondImage from "../../../../assets/Rectangle 44.png";
 
 export const News = () => {
+	const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize); // обработчик события изменения размера
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
     <div className={styles.news}>
       <div className={styles.first}>

@@ -31,7 +31,7 @@ export const MainPage = () => {
   }
 
   return (
-    <>
+    <div className={styles.mainPage}>
       <h1 className={styles.title}>
         <span className={styles.unique}>ЕДИНЫЙ</span> КАЛЕНДАРЬ ПЛАН
         ФИЗКУЛЬТУРНЫХ
@@ -80,7 +80,7 @@ export const MainPage = () => {
           Следующая страница
         </button>
       </div>
-    </>
+    </div>
   );
 };
 
