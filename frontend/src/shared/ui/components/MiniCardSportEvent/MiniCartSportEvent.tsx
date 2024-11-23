@@ -14,15 +14,17 @@ interface CartSportEventProps {
   };
   statusColor: string;
   status: string;
+	isMobile: boolean;
 }
 
 export const MiniCartSportEvent: React.FC<CartSportEventProps> = ({
   data,
   statusColor,
   status,
+	isMobile
 }) => {
   return (
-    <div className={styles.card}>
+    <div className={`${styles.card} ${isMobile ? styles.mobile : ''}`}>
       <div className={styles.headerCard}>
         <p className={styles.eventStatus} style={{ background: statusColor }}>
           {status}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MiniCartSportEvent } from "../../shared/ui/components/MiniCardSportEvent";
 import { FilterForm } from "../../features/Filter/ui/FilterForm";
 import { useSportEvents } from "../../shared/api/events";
@@ -9,6 +9,19 @@ import { News } from "../../shared/ui/components/News";
 export const MainPage = () => {
   const [page, setPage] = useState(1); // Страница по умолчанию
   const size = 21; // Размер страницы
+	const [isMobile, setIsMobile] = useState(false);
+
+	useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize); // обработчик события изменения размера
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   // Используем хук для запроса данных
   const { data, isLoading, error } = useSportEvents(page, size);
@@ -33,54 +46,58 @@ export const MainPage = () => {
   return (
     <div className={styles.mainPage}>
       <h1 className={styles.title}>
-        <span className={styles.unique}>ЕДИНЫЙ</span> КАЛЕНДАРЬ ПЛАН
+        <span className={styles.unique}>ЕДИНЫЙ</span> КАЛЕНДАРНЫЙ ПЛАН
         ФИЗКУЛЬТУРНЫХ
         <br /> И СПОРТИВНЫХ МЕРОПРИЯТИЙ
       </h1>
       <News />
-      <FilterForm />
-      <div className={styles.miniCards}>
-        {data?.items.map((event) => {
-          const { status, statusColor } = getEventStatus(
-            event.start_date,
-            event.end_date
-          );
-          return (
-            <MiniCartSportEvent
-              key={event.id}
-              data={{
-                id: event.id,
-                name: event.name,
-                start_date: event.start_date,
-                end_date: event.end_date,
-                participants_count: event.participants_count,
-                city: event.city,
-                sport: event.sport,
-              }}
-              statusColor={statusColor}
-              status={status}
-            />
-          );
-        })}
-      </div>
-      <div className={styles.pagination}>
-        <button
-          onClick={handlePrevPage}
-          disabled={page === 1}
-          className={styles.paginationButton}
-        >
-          Предыдущая страница
-        </button>
-        <span className={styles.pageInfo}>Страница: {page}</span>
-        <button
-          onClick={handleNextPage}
-          disabled={data && data.items.length < size}
-          className={styles.paginationButton}
-        >
-          Следующая страница
-        </button>
-      </div>
-    </div>
+			{/* {isMobile && <div className={styles.bgColorForMobile} />} */}
+			<FilterForm />
+			<div className={styles.miniCards}>
+				{data?.items.map((event) => {
+					const { status, statusColor } = getEventStatus(
+						event.start_date,
+						event.end_date
+					);
+					return (
+						<center className={styles.card}>
+							<MiniCartSportEvent
+								key={event.id}
+								data={{
+									id: event.id,
+									name: event.name,
+									start_date: event.start_date,
+									end_date: event.end_date,
+									participants_count: event.participants_count,
+									city: event.city,
+									sport: event.sport
+								}}
+								statusColor={statusColor}
+								status={status}
+								isMobile={isMobile}
+							/>
+						</center>
+					);
+				})}
+			</div>
+			<div className={styles.pagination}>
+				<button
+					onClick={handlePrevPage}
+					disabled={page === 1}
+					className={styles.paginationButton}
+				>
+					Предыдущая страница
+				</button>
+				<span className={styles.pageInfo}>Страница: {page}</span>
+				<button
+					onClick={handleNextPage}
+					disabled={data && data.items.length < size}
+					className={styles.paginationButton}
+				>
+					Следующая страница
+				</button>
+			</div>
+		</div>
   );
 };
 

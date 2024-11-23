@@ -73,7 +73,7 @@ export const FilterForm = () => {
     : [];
 
   return (
-    <>
+    <div className={styles.filterForm}>
       <div className={styles.buttons}>
         <h1 className={isFilterVisible ? "" : styles.hidden}>
           ЗАПОЛНИТЕ ФОРМУ
@@ -142,13 +142,16 @@ export const FilterForm = () => {
         />
         <div className={styles.inputs_flex}>
           <ChooseSexDropdown value={sex} setValue={setSex} />
-          <ChooseAgeInput
-            minAge={minAge}
-            setMinAge={setMinAge}
-            maxAge={maxAge}
-            setMaxAge={setMaxAge}
-          />
+					<div className={styles.age}>
+						<ChooseAgeInput
+							minAge={minAge}
+							setMinAge={setMinAge}
+							maxAge={maxAge}
+							setMaxAge={setMaxAge}
+						/>
+					</div>
         </div>
+
         <ChooseMemberCount
           memberCount={memberCount}
           setMemberCount={setMemberCount}
@@ -165,7 +168,7 @@ export const FilterForm = () => {
 
       {isLoadingSports && <p>Загрузка видов спорта...</p>}
       {errorSports && <p>Произошла ошибка при загрузке данных видов спорта.</p>}
-    </>
+    </div>
   );
 };
 
