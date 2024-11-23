@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useEvents } from "../../api/eventName"; // Импортируем хук useEvents
+import { useEvents } from "../../api/eventName";
+import { useSportEvents } from "../../api/sportName";
 import { MultiSelectDropdown } from "../../../../shared/ui/components/MultiSelectDropdown";
 import styles from "./filterform.module.scss";
 import { ChooseSexDropdown } from "../../../../shared/ui/components/ChooseSexDropdown";
@@ -7,11 +8,9 @@ import { ChooseAgeInput } from "../../../../shared/ui/components/ChooseAgeInput"
 import { ChooseMemberCount } from "../../../../shared/ui/components/ChooseMemberCount";
 import { ChooseDateInput } from "../../../../shared/ui/components/ChooseDateInput";
 
-// Компонент FilterForm
 export const FilterForm = () => {
   const [isFilterVisible, setFilterVisible] = useState(false);
 
-  // Состояния для значений в каждом MultiSelectDropdown
   const [multiSelectEventName, setMultiSelectEventName] = useState<string[]>(
     []
   );
@@ -22,15 +21,28 @@ export const FilterForm = () => {
   const [multiSelectValues4, setMultiSelectValues4] = useState<string[]>([]);
   const [multiSelectValues5, setMultiSelectValues5] = useState<string[]>([]);
 
-  // Данные для фильтрации
+  const [searchQuery, setSearchQuery] = useState<string>(""); // Состояние для поискового запроса
   const [sex, setSex] = useState<string[]>([]);
   const [minAge, setMinAge] = useState<string>("");
   const [maxAge, setMaxAge] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [memberCount, setMemberCount] = useState<string>("");
 
-  // Используем хук useEvents для получения данных о событиях
-  const { data: eventData, isLoading, error } = useEvents(1, 5);
+  const {
+    data: eventData,
+    isLoading: isLoadingEvents,
+    error: errorEvents,
+    fetchNextPage: fetchNextEventPage,
+    hasNextPage: hasNextEventPage,
+  } = useEvents(1, 10, searchQuery); // Передаем поисковый запрос
+
+  const {
+    data: sportEventData,
+    isLoading: isLoadingSports,
+    error: errorSports,
+    fetchNextPage: fetchNextSportPage,
+    hasNextPage: hasNextSportPage,
+  } = useSportEvents(1, 10, searchQuery); // Передаем поисковый запрос для видов спорта
 
   const toggleFilter = () => {
     setFilterVisible(!isFilterVisible);
@@ -42,12 +54,23 @@ export const FilterForm = () => {
     setMultiSelectValues3([]);
     setMultiSelectValues4([]);
     setMultiSelectValues5([]);
-    setSex([]); // Очищаем массив пола
+    setSearchQuery(""); // Очистить поисковый запрос
+    setSex([]);
     setMinAge("");
     setMaxAge("");
     setDate("");
     setMemberCount("");
   };
+
+  const eventOptions = eventData
+    ? eventData.pages.flatMap((page) => page.items.map((item) => item.name))
+    : [];
+
+  const sportEventOptions = sportEventData
+    ? sportEventData.pages.flatMap((page) =>
+        page.items.map((item) => item.sport)
+      )
+    : [];
 
   return (
     <>
@@ -72,36 +95,50 @@ export const FilterForm = () => {
           isFilterVisible ? styles.visible : styles.hidden
         }`}
       >
-        {/* Используем данные из useEvents */}
         <MultiSelectDropdown
           label="Название мероприятия"
           value={multiSelectEventName}
           setValue={setMultiSelectEventName}
-          options={eventData ? eventData.items.map((item) => item.name) : []} // Передаем массив с названиями мероприятий
+          options={eventOptions}
+          fetchMoreOptions={fetchNextEventPage}
+          hasNextPage={!!hasNextEventPage}
+          onSearch={setSearchQuery} // Передаем функцию обновления поискового запроса
         />
         <MultiSelectDropdown
           label="Вид спорта"
           value={multiSelectSportType}
           setValue={setMultiSelectSportType}
-          options={["Футбол", "Баскетбол", "Теннис"]} // Пример данных для "Вид спорта"
+          options={sportEventOptions}
+          fetchMoreOptions={fetchNextSportPage}
+          hasNextPage={!!hasNextSportPage}
+          onSearch={setSearchQuery} // Передаем функцию обновления поискового запроса
         />
         <MultiSelectDropdown
           label="Дисциплина"
           value={multiSelectValues3}
           setValue={setMultiSelectValues3}
-          options={["Дисциплина 1", "Дисциплина 2"]} // Пример данных для "Дисциплина"
+          options={["Дисциплина 1", "Дисциплина 2"]}
+          fetchMoreOptions={() => {}}
+          hasNextPage={false}
+          onSearch={() => {}} // Пустая функция
         />
         <MultiSelectDropdown
           label="Место проведения"
           value={multiSelectValues4}
           setValue={setMultiSelectValues4}
-          options={["Москва", "Санкт-Петербург"]} // Пример данных для "Место проведения"
+          options={["Москва", "Санкт-Петербург"]}
+          fetchMoreOptions={() => {}}
+          hasNextPage={false}
+          onSearch={() => {}} // Пустая функция
         />
         <MultiSelectDropdown
           label="Программа"
           value={multiSelectValues5}
           setValue={setMultiSelectValues5}
-          options={["Программа 1", "Программа 2"]} // Пример данных для "Программа"
+          options={["Программа 1", "Программа 2"]}
+          fetchMoreOptions={() => {}}
+          hasNextPage={false}
+          onSearch={() => {}} // Пустая функция
         />
         <div className={styles.inputs_flex}>
           <ChooseSexDropdown value={sex} setValue={setSex} />
@@ -123,9 +160,11 @@ export const FilterForm = () => {
         <button className={styles.search}>Поиск</button>
       </div>
 
-      {/* Показываем индикатор загрузки или ошибку */}
-      {isLoading && <p>Загрузка мероприятий...</p>}
-      {error && <p>Произошла ошибка при загрузке данных.</p>}
+      {isLoadingEvents && <p>Загрузка мероприятий...</p>}
+      {errorEvents && <p>Произошла ошибка при загрузке данных мероприятий.</p>}
+
+      {isLoadingSports && <p>Загрузка видов спорта...</p>}
+      {errorSports && <p>Произошла ошибка при загрузке данных видов спорта.</p>}
     </>
   );
 };

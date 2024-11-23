@@ -58,8 +58,7 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
         location = await _create_if_dont_exist(session, row.location.model_dump(by_alias=True), Location)
 
         # Теперь создаем или находим EventType
-        stmt = select(EventType).where(EventType.sport == row.event_type.sport).where(
-            EventType.category == row.event_type.category)
+        stmt = select(EventType).where(EventType.sport == row.event_type.sport)
         event_type = await session.scalar(stmt)
         if event_type is None:
             event_type = await _create_model(session, {**row.event_type.model_dump(by_alias=True)}, EventType)
@@ -80,4 +79,5 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
                                         Competition)
 
     except SQLAlchemyError as e:
+        # logger.exception("Mistake in row %s", row, exc_info=e)
         await session.rollback()  # Откатываем сессию в случае ошибки

@@ -55,9 +55,11 @@ class CrudEventAPIRouter(CrudAPIRouter):
             return await self.manager.paginated_list(session,
                                                      filter_expressions={
                                                          EventType.sport.in_: sports,
-                                                         EventType.category.in_: categories,
                                                          Location.city.in_: cities,
                                                          Location.region.in_: regions,
+                                                         AgeGroup.name.ilike: participant_type,
+                                                         AgeGroup.age_to.__le__: participant_to,
+                                                         AgeGroup.age_from.__ge__: participant_from,
                                                          SportEvent.start_date.__ge__: start_date,
                                                          SportEvent.end_date.__le__: end_date,
                                                      },

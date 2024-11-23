@@ -31,7 +31,6 @@ class AgeGroupSchema(BaseModel):
 
 class EventTypeSchema(BaseModel):
     sport: str
-    category: str
 
 
 class LocationSchema(BaseModel):
@@ -50,6 +49,7 @@ class EventSchema(BaseModel):
     name: str
     start_date: date
     end_date: date
+    category: str
     count_people: int = Field(serialization_alias='participants_count')
 
     @field_validator('start_date', 'end_date', mode='before')
@@ -182,11 +182,11 @@ class ParserPDF:
         split = city_block.text[1].split(',')
         if len(split) == 2:
             split[1]: str
-            city = split[1].removeprefix('Город').removeprefix('г.').removeprefix('г').strip(' ')
+            city = split[1].strip(' ').removeprefix('Город').removeprefix('г.').removeprefix('г').strip(' ')
             event_map = LocationSchema(country=city_block.text[0], region=split[0], city=city)
         else:
             split[0]: str
-            city = split[0].removeprefix('Город').removeprefix('г.').removeprefix('г').strip(' ')
+            city = split[0].strip(' ').removeprefix('Город').removeprefix('г.').removeprefix('г').strip(' ')
             event_map = LocationSchema(country=city_block.text[0], region=None, city=city)
         return event_map
 
@@ -216,11 +216,11 @@ class ParserPDF:
 
         count_block = next(gen)
         event = EventSchema(
+            category=self._current_category,
             id=event_id, name=event_name, start_date=date_block.text[0], end_date=date_block.text[1],
             count_people=count_block.text[0]
         )
-        event_type = EventTypeSchema(sport=self._current_sport,
-                                     category=self._current_category)
+        event_type = EventTypeSchema(sport=self._current_sport)
 
         row = Row(
             event_type=event_type,
