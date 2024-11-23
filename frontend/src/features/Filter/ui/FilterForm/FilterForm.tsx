@@ -1,46 +1,48 @@
 import { useState } from "react";
-import styles from "./filterform.module.scss";
-import { SingleSelectDropdown } from "../../../../shared/ui/components/SingleSelectDropdown";
+import { useEvents } from "../../api/eventName"; // Импортируем хук useEvents
 import { MultiSelectDropdown } from "../../../../shared/ui/components/MultiSelectDropdown";
+import styles from "./filterform.module.scss";
 import { ChooseSexDropdown } from "../../../../shared/ui/components/ChooseSexDropdown";
 import { ChooseAgeInput } from "../../../../shared/ui/components/ChooseAgeInput";
 import { ChooseMemberCount } from "../../../../shared/ui/components/ChooseMemberCount";
 import { ChooseDateInput } from "../../../../shared/ui/components/ChooseDateInput";
 
+// Компонент FilterForm
 export const FilterForm = () => {
   const [isFilterVisible, setFilterVisible] = useState(false);
 
-  // Состояние для значения в SingleSelectDropdown
-  const [singleSelectValue, setSingleSelectValue] = useState("Все");
-
   // Состояния для значений в каждом MultiSelectDropdown
-  const [multiSelectValues1, setMultiSelectValues1] = useState<string[]>([]);
-  const [multiSelectValues2, setMultiSelectValues2] = useState<string[]>([]);
+  const [multiSelectEventName, setMultiSelectEventName] = useState<string[]>(
+    []
+  );
+  const [multiSelectSportType, setMultiSelectSportType] = useState<string[]>(
+    []
+  );
   const [multiSelectValues3, setMultiSelectValues3] = useState<string[]>([]);
   const [multiSelectValues4, setMultiSelectValues4] = useState<string[]>([]);
   const [multiSelectValues5, setMultiSelectValues5] = useState<string[]>([]);
 
-  const [sex, setSex] = useState<string>("");
-
+  // Данные для фильтрации
+  const [sex, setSex] = useState<string[]>([]);
   const [minAge, setMinAge] = useState<string>("");
   const [maxAge, setMaxAge] = useState<string>("");
-
   const [date, setDate] = useState<string>("");
-
   const [memberCount, setMemberCount] = useState<string>("");
+
+  // Используем хук useEvents для получения данных о событиях
+  const { data: eventData, isLoading, error } = useEvents(1, 5);
 
   const toggleFilter = () => {
     setFilterVisible(!isFilterVisible);
   };
 
   const clearFilters = () => {
-    setSingleSelectValue("Все");
-    setMultiSelectValues1([]);
-    setMultiSelectValues2([]);
+    setMultiSelectEventName([]);
+    setMultiSelectSportType([]);
     setMultiSelectValues3([]);
     setMultiSelectValues4([]);
     setMultiSelectValues5([]);
-    setSex("");
+    setSex([]); // Очищаем массив пола
     setMinAge("");
     setMaxAge("");
     setDate("");
@@ -70,34 +72,36 @@ export const FilterForm = () => {
           isFilterVisible ? styles.visible : styles.hidden
         }`}
       >
-        <SingleSelectDropdown
-          value={singleSelectValue}
-          setValue={setSingleSelectValue}
-        />
+        {/* Используем данные из useEvents */}
         <MultiSelectDropdown
-          label="Тип мероприятия"
-          value={multiSelectValues1}
-          setValue={setMultiSelectValues1}
+          label="Название мероприятия"
+          value={multiSelectEventName}
+          setValue={setMultiSelectEventName}
+          options={eventData ? eventData.items.map((item) => item.name) : []} // Передаем массив с названиями мероприятий
         />
         <MultiSelectDropdown
           label="Вид спорта"
-          value={multiSelectValues2}
-          setValue={setMultiSelectValues2}
+          value={multiSelectSportType}
+          setValue={setMultiSelectSportType}
+          options={["Футбол", "Баскетбол", "Теннис"]} // Пример данных для "Вид спорта"
         />
         <MultiSelectDropdown
           label="Дисциплина"
           value={multiSelectValues3}
           setValue={setMultiSelectValues3}
+          options={["Дисциплина 1", "Дисциплина 2"]} // Пример данных для "Дисциплина"
         />
         <MultiSelectDropdown
           label="Место проведения"
           value={multiSelectValues4}
           setValue={setMultiSelectValues4}
+          options={["Москва", "Санкт-Петербург"]} // Пример данных для "Место проведения"
         />
         <MultiSelectDropdown
           label="Программа"
           value={multiSelectValues5}
           setValue={setMultiSelectValues5}
+          options={["Программа 1", "Программа 2"]} // Пример данных для "Программа"
         />
         <div className={styles.inputs_flex}>
           <ChooseSexDropdown value={sex} setValue={setSex} />
@@ -118,6 +122,10 @@ export const FilterForm = () => {
         </div>
         <button className={styles.search}>Поиск</button>
       </div>
+
+      {/* Показываем индикатор загрузки или ошибку */}
+      {isLoading && <p>Загрузка мероприятий...</p>}
+      {error && <p>Произошла ошибка при загрузке данных.</p>}
     </>
   );
 };
