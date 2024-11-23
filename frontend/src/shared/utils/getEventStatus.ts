@@ -18,7 +18,7 @@ export const getEventStatus = (start_date: string, end_date: string) => {
 	}
 
 	else if (todayOnly >= startDateOnly && todayOnly <= endDateOnly) {
-		status = "ТЕКУЩЕЕ СОБЫТИЕ";
+		status = "АКТИВНО ИДЕТ";
 		statusColor = "#3169F2";
 	}
 

@@ -1,20 +1,32 @@
-export interface ILocation {
-	city: string;
-	region: string;
-	country: string;
+export interface IAges {
+	id: number;
+	name: string;
+	start: number;
+	end: number;
 }
 
-export interface IEventDate {
-	start_date: string;
-	end_date: string;
+export interface ILocation {
+	id: number;
+	country: string;
+	region: string;
+	city: string;
+}
+
+export interface ICompetitions {
+	id: number;
+	name: string;
+	type: string;
+	event_id: number;
 }
 
 export interface ICartSportEvent {
-	name_event: string;
-	event_date: IEventDate;
-	no_sm_ekp: number;
-	location: ILocation;
-	discipline: string;
+	id: number;
+	name: string;
+	start_date: string;
+	end_date: string;
+	type_event_id: number;
+	location_id: number;
+	age_group_id: number;
 	participants_count: number;
-	additional_info: string;
 }
+
