@@ -37,7 +37,7 @@ async def _create_if_dont_exist[DBModel](session: AsyncSession, _dict: dict, mod
 
     obj = await session.scalar(stmt)
     if obj is None:
-        await _create_model(session, _dict, model)
+        return await _create_model(session, _dict, model)
 
     return obj
 
