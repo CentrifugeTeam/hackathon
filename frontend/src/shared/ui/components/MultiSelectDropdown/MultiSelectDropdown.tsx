@@ -2,28 +2,23 @@ import { useState, useEffect, useRef } from "react";
 import styles from "../dropdown.module.scss";
 import Arrow from "../../../../assets/iconamoon_arrow-up-2-light.svg";
 
-const options = [
-  "Все",
-  "Спортивные",
-  "Культурные",
-  "Образовательные",
-  "Обраывзовательные",
-  "ыфв",
-  "Образовыфвательные",
-  "Образвыфвовательные",
-];
+interface MultiSelectDropdownProps {
+  label: string;
+  value: string[];
+  setValue: (value: string[]) => void;
+  options: string[]; // Добавляем options, который передается как пропс
+}
 
 export const MultiSelectDropdown = ({
   label,
   value,
   setValue,
-}: {
-  label: string;
-  value: string[];
-  setValue: (value: string[]) => void;
-}) => {
+  options, // Пропс options
+}: MultiSelectDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [localValue, setLocalValue] = useState<string[]>(value);
+  const [searchQuery, setSearchQuery] = useState(""); // Состояние для поискового запроса
+  const [isEditing, setIsEditing] = useState(false); // Состояние для редактирования (при клике на span)
   const dropdownRef = useRef<HTMLDivElement>(null); // Реф для отслеживания кликов вне области
 
   useEffect(() => {
@@ -37,9 +32,11 @@ export const MultiSelectDropdown = ({
   const handleClickOutside = (event: MouseEvent) => {
     if (
       dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
+      !dropdownRef.current.contains(event.target as Node) &&
+      !isEditing // Если мы редактируем, меню не закрывается
     ) {
       setIsOpen(false);
+      setIsEditing(false); // Если кликнули вне, скрыть поле редактирования
     }
   };
 
@@ -53,7 +50,7 @@ export const MultiSelectDropdown = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, isEditing]); // Следим за состоянием isEditing
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -67,6 +64,7 @@ export const MultiSelectDropdown = ({
 
   const handleClear = () => {
     setLocalValue([]);
+    setSearchQuery(""); // Очистить запрос поиска
   };
 
   const renderSelectedItems = () => {
@@ -82,13 +80,37 @@ export const MultiSelectDropdown = ({
     );
   };
 
+  // Фильтрация опций по поисковому запросу
+  const filteredOptions = options.filter((option) =>
+    option.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Обработчик для старта редактирования
+  const handleEdit = () => {
+    setIsEditing(true);
+    setSearchQuery(""); // Очистить текущий запрос при редактировании
+  };
+
   return (
     <div className={styles.dropdown} ref={dropdownRef}>
       <label className={styles.label}>{label}</label>
       <div className={styles.select} onClick={toggleDropdown}>
-        <span>
-          {localValue.length > 0 ? renderSelectedItems() : "Выберите варианты"}
-        </span>
+        {/* Если редактируем, показываем поле ввода */}
+        {isEditing ? (
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Поиск..."
+            className={styles.searchInput}
+            onBlur={() => setIsEditing(false)}
+            autoFocus
+          />
+        ) : (
+          <span onClick={handleEdit}>
+            {localValue.length > 0 ? renderSelectedItems() : "Поиск..."}
+          </span>
+        )}
         <span className={isOpen ? styles.arrowOpen : styles.arrowClosed}>
           <img src={Arrow} alt="Arrow" />
         </span>
@@ -98,7 +120,7 @@ export const MultiSelectDropdown = ({
           <li className={styles.clear} onClick={handleClear}>
             Очистить выбор
           </li>
-          {options.map((option) => (
+          {filteredOptions.map((option) => (
             <li
               key={option}
               onClick={() => handleSelect(option)}
