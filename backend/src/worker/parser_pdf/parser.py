@@ -242,7 +242,8 @@ class ParserPDF:
             try:
                 res = self._parse_row(gen)
             except ParseRowException as e:
-                raise e
+                pass
+                # raise e
                 # logger.exception('Exception in parsing rows with blocks %s', e.blocks, exc_info=e)
 
 
