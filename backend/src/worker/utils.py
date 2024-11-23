@@ -5,9 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from typing import Generic, TypeVar
 
-from web.app.schemas.event import Event
-from web.app.schemas.event_type import EventTypeSearch
-from .parser_pdf.parser import Row, EventTypeSchema
+from .parser_pdf.parser import Row
 from storage.db.models import EventType, SportEvent, AgeGroup, Location, Competition
 from logging import getLogger
 

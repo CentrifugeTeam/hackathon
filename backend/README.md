@@ -1,18 +1,20 @@
-# Backend
+# Запуск приложения
 
-## Конфигурация приложения
-    вся конфигурация находится в .env файле
+## Развертка 
 ### Создать контейнер: 
     docker compose build
 ### Запустить контейнер:
     docker compose up
-### Зайти в запущенный контейнер
-    docker exec -it backend bash
-### Создание миграции
-    alembic revision --autogenerate
-### Применение миграции
-    alembic upgrade head
 
-### Документация
-    http://localhost/api/docs
+## После запуска на localhost будут доступны следующие адреса:
+    http://localhost/api/docs - Rest API
+    http://localhost:8002 - pgAdmin
+    http://localhost:8080 - Клиент для worker сервиса
+    http://localhost:8001 - клиент для Redis
+    http://localhost/ - путь пользователя
 
+
+
+
+## Конфигурация приложения
+    вся конфигурация находится в .env файле

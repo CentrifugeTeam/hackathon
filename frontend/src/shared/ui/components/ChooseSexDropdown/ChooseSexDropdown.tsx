@@ -2,21 +2,27 @@ import { useState, useEffect, useRef } from "react";
 import styles from "../dropdown.module.scss";
 import Arrow from "../../../../assets/iconamoon_arrow-up-2-light.svg";
 
-// Опции для выбора
-const options = ["Мужской", "Женский"];
+interface ChooseSexDropdownProps {
+  label: string;
+  value: string[];
+  setValue: (value: string[]) => void;
+  options: string[];
+  onSearch: (query: string) => void;
+}
 
 export const ChooseSexDropdown = ({
+  label,
   value,
   setValue,
-}: {
-  value: string[]; // Указываем, что value теперь массив строк
-  setValue: (value: string[]) => void; // setValue теперь принимает массив строк
-}) => {
+  options,
+  onSearch,
+}: ChooseSexDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [localValue, setLocalValue] = useState<string[]>(value);
-  const [searchQuery, setSearchQuery] = useState(""); // Состояние для поискового запроса
-  const [isEditing, setIsEditing] = useState(false); // Состояние для редактирования
-  const dropdownRef = useRef<HTMLDivElement>(null); // Реф для отслеживания кликов вне области
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLocalValue(value);
@@ -26,14 +32,27 @@ export const ChooseSexDropdown = ({
     setValue(localValue);
   }, [localValue, setValue]);
 
-  // Обработчик клика вне области
+  useEffect(() => {
+    setFilteredOptions(
+      options.filter((option) =>
+        option.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [options, searchQuery]);
+
+  useEffect(() => {
+    onSearch(searchQuery);
+    setFilteredOptions([]); // Clear filtered options when search query changes
+  }, [searchQuery, onSearch]);
+
   const handleClickOutside = (event: MouseEvent) => {
     if (
       dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
+      !dropdownRef.current.contains(event.target as Node) &&
+      !isEditing
     ) {
       setIsOpen(false);
-      setIsEditing(false); // Скрыть поле редактирования, если кликнули вне области
+      setIsEditing(false);
     }
   };
 
@@ -47,30 +66,22 @@ export const ChooseSexDropdown = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, isEditing]);
 
-  // Обработчик для старта редактирования
-  const handleEdit = () => {
-    setIsEditing(true);
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
   };
 
-  // Фильтрация опций по поисковому запросу
-  const filteredOptions = options.filter((option) =>
-    option.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Обработчик выбора опции
   const handleSelect = (item: string) => {
-    if (localValue.includes(item)) {
-      setLocalValue(localValue.filter((value) => value !== item)); // Удалить, если уже выбран
-    } else {
-      setLocalValue([...localValue, item]); // Добавить, если не выбран
-    }
+    setLocalValue((prev) =>
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
+    );
   };
 
   const handleClear = () => {
-    setLocalValue([]); // Очистить все выбранные значения
-    setSearchQuery(""); // Очистить поисковый запрос
+    setLocalValue([]);
+    setSearchQuery("");
+    setFilteredOptions([]); // Clear filtered options on clear
   };
 
   const renderSelectedItems = () => {
@@ -86,11 +97,16 @@ export const ChooseSexDropdown = ({
     );
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+    setSearchQuery("");
+    setFilteredOptions([]); // Clear filtered options on start editing
+  };
+
   return (
-    <div className={styles.dropdown_2} ref={dropdownRef}>
-      <label className={styles.label}>Выберите пол</label>
-      <div className={styles.select_sex} onClick={() => setIsOpen(!isOpen)}>
-        {/* Если редактируем, показываем поле ввода */}
+    <div className={styles.dropdown} ref={dropdownRef}>
+      <label className={styles.label}>{label}</label>
+      <div className={styles.select} onClick={toggleDropdown}>
         {isEditing ? (
           <input
             type="text"
@@ -103,7 +119,7 @@ export const ChooseSexDropdown = ({
           />
         ) : (
           <span onClick={handleEdit}>
-            {localValue.length > 0 ? renderSelectedItems() : "Выберите"}
+            {localValue.length > 0 ? renderSelectedItems() : "Поиск..."}
           </span>
         )}
         <span className={isOpen ? styles.arrowOpen : styles.arrowClosed}>

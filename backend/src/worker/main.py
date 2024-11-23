@@ -44,8 +44,7 @@ settings = {
     "queue": queue,
     "functions": [test],
     "concurrency": 10,
-    "cron_jobs": [CronJob(cron_update_calendar_table, cron="2 8 * * *")],
-    # "2 8 * * *" каждый день в 8 утра 2 минуты
+    "cron_jobs": [CronJob(cron_update_calendar_table, cron="* * * * * */5")],
     "startup": startup,
     "shutdown": shutdown,
     "before_process": before_process,

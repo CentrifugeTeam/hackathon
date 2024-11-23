@@ -27,7 +27,6 @@ async def cron_update_calendar_table(ctx):
     maker = ctx['async_session_maker']
     maker: async_sessionmaker
     parser = ParserPDF()
-    loop = asyncio.get_running_loop()
     try:
         rows = parser.grap_rows(file_name)
         logger.info('fetched rows %d', len(rows))
@@ -83,7 +82,6 @@ async def fetch_pdf(ctx):
                                                 logger.info(pdf_url)
                                                 return await _fetch_pdf(ctx, pdf_url)
 
-                                # logger.info(f"Документ для %s года не найден.", current_year)
                         except json.JSONDecodeError as e:
                             logger.exception(f"Ошибка при обработке JSON данных:", exc_info=e)
             else:
