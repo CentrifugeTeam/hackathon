@@ -1,26 +1,23 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import api from "../../../shared/api/base";
 
-export interface IAgeEvent {
-  name: string;
-  start: number;
-  end: number;
-  id: number;
+export interface ILocationEvent {
+  city: string;
 }
 
-export interface IAgeEventResponse {
-  items: IAgeEvent[];
+export interface ILocationEventResponse {
+  items: ILocationEvent[];
   total: number;
   page: number;
   size: number;
   pages: number;
 }
 
-export const fetchAgeEvents = async (
+export const fetchLocationEvents = async (
   page: number | undefined,
   size: number | undefined,
   name?: string
-): Promise<IAgeEventResponse> => {
+): Promise<ILocationEventResponse> => {
   const params: { page?: number; size?: number; name?: string } = {};
   if (name) {
     params.name = name;
@@ -29,14 +26,11 @@ export const fetchAgeEvents = async (
     params.size = size;
   }
 
-  const response = await api.get(`/ages/search`, { params });
+  const response = await api.get(`/locations/search`, { params });
 
   return {
     items: response.data.items.map((item: any) => ({
-      name: item.name,
-      start: item.start,
-      end: item.end,
-      id: item.id,
+      city: item.city,
     })),
     total: response.data.total,
     page: response.data.page,
@@ -45,19 +39,19 @@ export const fetchAgeEvents = async (
   };
 };
 
-export const useAgeEvents = (
+export const useLocationEvents = (
   initialPage: number = 1,
-  size: number = 10,
+  size: number = 20,
   name?: string
 ) => {
-  return useInfiniteQuery<IAgeEventResponse>({
-    queryKey: ["ageEvents", name],
+  return useInfiniteQuery<ILocationEventResponse>({
+    queryKey: ["locationEvents", name],
     queryFn: ({ pageParam = initialPage }) =>
-      fetchAgeEvents(
+      fetchLocationEvents(
         name ? undefined : (pageParam as number),
         name ? undefined : size,
         name
-      ), // Передаем undefined для page и size, если есть name
+      ),
     getNextPageParam: (lastPage) => {
       if (lastPage.page < lastPage.pages) {
         return lastPage.page + 1;
