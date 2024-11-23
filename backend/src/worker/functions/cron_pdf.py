@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy import select
 from ..parser_pdf.parser import ParserPDF
 from storage.db.models import FilePDF, File
+from ..utils import update_db
 
 logger = getLogger(__name__)
 
@@ -30,6 +31,8 @@ async def cron_update_calendar_table(ctx):
     parser = ParserPDF()
     loop = asyncio.get_running_loop()
     rows = parser.grap_rows(file_name)
+    await update_db(maker, rows)
+
     # with ProcessPoolExecutor() as executor:
     #     rows = await loop.run_in_executor(executor, parser.grap_rows, file_name)
 

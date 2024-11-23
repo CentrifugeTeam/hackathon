@@ -6,11 +6,6 @@ from pymupdf import Document, Page
 from dataclasses import dataclass
 from pydantic import BaseModel, validator, field_validator, Field
 from logging import getLogger
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.future import select
-from ...storage.db.models import SportEvent, EventType, Location, AgeGroup, Competition
 
 logger = getLogger(__name__)
 
@@ -28,8 +23,8 @@ class Block:
 
 class AgeGroupSchema(BaseModel):
     name: str
-    start: int | None = None
-    end: int | None = None
+    start: int | None = Field(default=None, serialization_alias='age_from')
+    end: int | None = Field(default=None, serialization_alias='age_to')
 
 
 class EventTypeSchema(BaseModel):
@@ -81,7 +76,7 @@ class Row(BaseModel):
 
 class ParserPDF:
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self):
         self._current_sport: str | None = None
         self._current_category: str | None = None
         self.items_on_update = None
@@ -89,7 +84,6 @@ class ParserPDF:
             'Основной состав',
             "Молодежный (резервный) состав",
         ]
-        self.session = session
 
     def grap_rows(self, file: BinaryIO):
         logger.info('start parcing')

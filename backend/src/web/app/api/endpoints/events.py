@@ -3,6 +3,8 @@ from fastapi import Request, Depends
 from fastapi_pagination import Page
 from fastapi_sqlalchemy_toolkit import ordering_depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
+
 from crud import Context
 from crud.openapi_responses import not_found_response
 from ...dependencies.session import get_session
@@ -53,6 +55,8 @@ class CrudEventAPIRouter(CrudAPIRouter):
                                                          Location.region.in_: regions,
                                                          # AgeGroup.
                                                      },
+                                                     options=[joinedload(SportEvent.location), joinedload(SportEvent.age_groups),
+                                                              joinedload(SportEvent.competitions), joinedload(SportEvent.type_event)]
                                                      # order_by=order_by,
                                                      )
 

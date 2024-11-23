@@ -5,15 +5,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from typing import Generic, TypeVar
 
-from web.app.schemas.calendar_plan import Location, Competition
-from .parser_pdf.parser import Row, EventTypeSchema, AgeGroupSchema
-from storage.db.models import EventType, SportEvent
+from .parser_pdf.parser import Row, EventTypeSchema
+from storage.db.models import EventType, SportEvent, AgeGroup, Location, Competition
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 DBModel = TypeVar('DBModel', bound=DeclarativeBase)
 
 
-async def update_db(ctx, rows: list[Row]):
-    sessionmaker = ctx['async_session_maker']
+async def update_db(sessionmaker, rows: list[Row]):
     async with sessionmaker() as session:
         session: AsyncSession
         for row in rows:
@@ -28,12 +29,11 @@ async def _handle_row(session, row: Row):
 async def _create_if_dont_exist[DBModel](session: AsyncSession, _dict: dict, model: type[DBModel]) -> DBModel:
     stmt = select(model)
     for key, value in _dict.items():
-        stmt = stmt.where(
-            getattr(model, key) == value
-        )
+        model_key = getattr(model, key)
+        stmt = stmt.where(model_key == value)
 
     obj = await session.scalar(stmt)
-    if obj in None:
+    if obj is None:
         obj = model(**_dict)
         session.add(obj)
         await session.commit()
@@ -44,75 +44,26 @@ async def _create_if_dont_exist[DBModel](session: AsyncSession, _dict: dict, mod
 async def save_event_and_related_data(session: AsyncSession, row: Row):
     try:
         # Сначала сохраняем или получаем существующее место
-        location_data = row.location
-        location = await session.execute(select(Location).filter_by(
-            country=location_data.country,
-            region=location_data.region,
-            city=location_data.city
-        ))
-        location = location.scalars().first()
 
-        if location is None:
-            location = Location(
-                country=location_data.country,
-                region=location_data.region,
-                city=location_data.city
-            )
-            session.add(location)
-            await session.commit()  # Коммитим после добавления местоположения
+        location = await _create_if_dont_exist(session, row.location.model_dump(by_alias=True), Location)
 
         # Теперь создаем или находим EventType
-        event_type_data = row.event_type
-        event_type = await session.execute(select(EventType).filter_by(
-            sport=event_type_data.sport,
-            category=event_type_data.category
-        ))
-        event_type = event_type.scalars().first()
-
-        if event_type is None:
-            event_type = EventType(
-                sport=event_type_data.sport,
-                category=event_type_data.category
-            )
-            session.add(event_type)
-            await session.commit()  # Коммитим после добавления типа события
+        event_type = await _create_if_dont_exist(session, row.event_type.model_dump(by_alias=True), EventType)
 
         # Создаем событие
-        event_data = row.event
-        event = SportEvent(
-            name=event_data.name,
-            start_date=event_data.start_date,
-            end_date=event_data.end_date,
-            participants_count=event_data.count_people,
-            type_event_id=event_type.id,
-            location_id=location.id
-        )
-        session.add(event)
-        await session.commit()  # Коммитим после добавления события
+        event = await _create_if_dont_exist(session, {**row.event.model_dump(by_alias=True), 'location_id': location.id,
+                                                      'type_event_id': event_type.id}, SportEvent)
 
         # Сохраняем возрастные группы (AgeGroup)
         for req in row.reqs:
-            age_group_data = req
-            age_group = AgeGroupSchema(
-                name=age_group_data.name,
-                age_from=age_group_data.start,
-                age_to=age_group_data.end,
-                event_id=event.id
-            )
-            session.add(age_group)
+            await _create_if_dont_exist(session, {**req.model_dump(by_alias=True), 'event_id': event.id}, AgeGroup)
 
         # Сохраняем дисциплины (Competition)
         for competition in row.competitions:
-            competition_data = competition
-            competition_record = Competition(
-                name=competition_data.name,
-                type=competition_data.type,
-                event_id=event.id
-            )
-            session.add(competition_record)
-
+            await _create_if_dont_exist(session, {**competition.model_dump(by_alias=True), 'event_id': event.id},
+                                        Competition)
         # Завершаем транзакцию
-        await session.commit()  # Коммитим все изменения (возрастные группы и дисциплины)
+        logger.info('Row created %s', row)
 
     except SQLAlchemyError as e:
         # Логируем ошибку, если она возникла

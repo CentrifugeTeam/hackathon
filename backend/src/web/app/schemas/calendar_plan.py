@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 
+
 class AgeGroup(BaseModel):
     name: str
     start: int | None = None
@@ -51,8 +52,10 @@ class EventBase(BaseModel):
 
 
 class Event(EventBase):
-    type_event_id: int
-    location_id: int
+    location: LocationRead
+    age_groups: list[AgeGroupRead]
+    competitions: list[CompetitionRead]
+    type_event: SportEventTypeRead
 
 
 class EventRead(Event):
