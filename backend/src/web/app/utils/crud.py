@@ -15,38 +15,23 @@ class CrudAPIRouter(CRUDTemplate):
 
     def _get_all(self, *args: Any, **kwargs: Any):
 
-        async def func(request: Request, session: AsyncSession = Depends(self.get_session), ):
-            return await self.manager.list(session)
-
         @self.get(
             path='/',
             response_model=list[self.schema],
-            dependencies=[Depends(get_current_user())],
-            responses={**missing_token_or_inactive_user_response, **forbidden_response}
 
         )
-        async def filter_operation(
-                resources: list[Resource] = Depends(func),
-                principals: list = Depends(get_user_principals),
-                # acls: list = Permission("batch", AclBatchPermission)
-        ):
-            return [item for item in resources if has_permission(principals, "view", item)]
+        async def func(request: Request, session: AsyncSession = Depends(self.get_session), ):
+            return await self.manager.list(session)
 
     def _get_one(self, *args: Any, **kwargs: Any):
-        async def func(request: Request, id: int, session: AsyncSession = Depends(self.get_session)):
-            return await self.manager.get_or_404(session, id=id)
-
         @self.get(
             path='/{id}',
             response_model=self.schema,
-            dependencies=[Depends(get_current_user())],
-            responses={**missing_token_or_inactive_user_response, **not_found_response,
-                       **forbidden_response,
-                       }
+            responses={**not_found_response}
 
         )
-        async def route(resource=Permission('view', func)):
-            return resource
+        async def func(request: Request, id: int, session: AsyncSession = Depends(self.get_session)):
+            return await self.manager.get_or_404(session, id=id)
 
     def _create(self, *args: Any, **kwargs: Any):
         create_schema = self.create_schema
