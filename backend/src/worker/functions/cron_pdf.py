@@ -31,6 +31,8 @@ async def cron_update_calendar_table(ctx):
     with ProcessPoolExecutor() as executor:
         rows = await loop.run_in_executor(executor, parser.grap_rows, file_name)
 
+    logger.info('fetched rows %d', len(rows))
+
     os.remove(file_name)
     # logger.info('count rows %d', len(rows))
 

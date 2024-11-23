@@ -29,8 +29,8 @@ def upgrade() -> None:
     ${upgrades if upgrades else "pass"}
     async def seed_db(connection: AsyncConnection):
         session = AsyncSession(bind=connection)
-#        Factory.__async_session__ = session
-#        await Factory.create_batch_async(10)
+#       Factory.__async_session__ = session
+#       await Factory.create_batch_async(10)
 
 
     op.run_async(seed_db)

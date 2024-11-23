@@ -6,5 +6,5 @@ from sqlalchemy import ForeignKey, DateTime
 
 class FilePDF(IDMixin, Base):
     __tablename__ = 'pdf_files'
-    file_id: Mapped[int] = mapped_column(ForeignKey('files.id'))
+    file_id: Mapped[int] = mapped_column(ForeignKey('files.id', ondelete='CASCADE'))
     touch_date: Mapped[datetime] = mapped_column(DateTime)

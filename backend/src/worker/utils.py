@@ -1,7 +1,13 @@
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from .parser_pdf.parser import Row, SportEvent
+from sqlalchemy.orm import DeclarativeBase
+from typing import Generic, TypeVar
+
+from .parser_pdf.parser import Row, EventType
 from storage.db.models import EventType
+
+DBModel = TypeVar('DBModel', bound=DeclarativeBase)
 
 
 async def update_db(ctx, rows: list[Row]):
@@ -13,17 +19,23 @@ async def update_db(ctx, rows: list[Row]):
 
 
 async def _handle_row(session, row: Row):
-    await _handle_name_sport_event(row, session)
+    obj = await _create_if_dont_exist(session, row.model_dump(by_alias=True), EventType)
 
 
-async def _handle_name_sport_event(row: Row, session: AsyncSession):
-    stmt = select(EventType).where((EventType.category == row.category) &
-                                   (EventType.sport == row.sport))
+
+async def _create_if_dont_exist[DBModel](session: AsyncSession, _dict: dict, model: type[DBModel]) -> DBModel:
+    stmt = select(model)
+    for key, value in _dict.items():
+        stmt = stmt.where(
+            getattr(model, key) == value
+        )
+
     obj = await session.scalar(stmt)
     if obj in None:
-        obj = EventType(category=row.category, sport=row.sport)
+        obj = model(**_dict)
         session.add(obj)
         await session.commit()
 
     return obj
+
 

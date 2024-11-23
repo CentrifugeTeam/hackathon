@@ -4,7 +4,7 @@ from typing import BinaryIO, Generator, Any
 import pymupdf
 from pymupdf import Document, Page
 from dataclasses import dataclass
-from pydantic import BaseModel, validator, field_validator
+from pydantic import BaseModel, validator, field_validator, Field
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -21,20 +21,34 @@ class Block:
     num2: int
 
 
-class PersonRequirements(BaseModel):
+class AgeGroup(BaseModel):
     name: str
     start: int | None = None
     end: int | None = None
 
 
-class SportEvent(BaseModel):
+class EventType(BaseModel):
+    sport: str
+    category: str
+
+
+class Location(BaseModel):
+    country: str
+    region: str | None
+    city: str
+
+
+class Competition(BaseModel):
+    name: str
+    type: str
+
+
+class Event(BaseModel):
     id: int
     name: str
-
-
-class IntervalEvent(BaseModel):
     start_date: date
     end_date: date
+    count_people: int = Field(serialization_alias='participants_count')
 
     @field_validator('start_date', 'end_date', mode='before')
     @classmethod
@@ -52,30 +66,12 @@ class IntervalEvent(BaseModel):
         return datetime.strptime(v, '%d.%m.%Y').date()
 
 
-class EventMap(BaseModel):
-    country: str
-    region: str | None
-    city: str
-
-
-class Competition(BaseModel):
-    name: str
-
-
-class Competitions(BaseModel):
-    disciplines: list[Competition]
-    programs: list[Competition]
-
-
 class Row(BaseModel):
-    sport_event: SportEvent
-    interval: IntervalEvent
-    map: EventMap
-    count_people: int
-    sport: str
-    category: str
-    reqs: list[PersonRequirements]
-    competitions: Competitions
+    event_type: EventType
+    event: Event
+    location: Location
+    reqs: list[AgeGroup]
+    competitions: list[Competition]
 
 
 class ParserPDF:
@@ -125,41 +121,10 @@ class ParserPDF:
         return (self._parse_raw_data(data) for data in page.get_text('blocks'))
 
     def _handle_default_row(self, gen: Generator, blocks: tuple[Block, Block]) -> Row:
-        # logger.info('blocks %s', blocks)
-        sport_block, date_block = blocks
-        if len(sport_block.text) != 2:
-            logger.warning('sport block with text less then 2! %s', sport_block)
-            reqs = []
-        else:
-            reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
+        return self._handle_after_date_block(gen, *blocks)
 
-        sport_event = SportEvent(id=sport_block.text[0], name=sport_block.text[1])
-        interval_event = IntervalEvent(start_date=date_block.text[0], end_date=date_block.text[1])
-        competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
-        event_map = self._create_event_map(gen)
-        # logger.info('event_map %s, interval_event %s , sport_event %s', event_map, interval_event, sport_event)
-
-        count_block = next(gen)
-        row = Row(sport_event=sport_event, interval=interval_event, map=event_map,
-                  count_people=count_block.text[0],
-                  sport=self._current_sport,
-                  category=self._current_category,
-                  reqs=reqs,
-                  competitions=competitions
-                  )
-        # logger.info('row %s', row)
-        return row
-
-    def _convert_to_disciplines(self, text: str):
-        res = []
-        for name in text.split(','):
-            name = name.strip()
-            res.append(Competition(name=name))
-        return res
-
-    def _convert_to_programs_and_disciplines(self, text: str):
-        programs = []
-        disciplines = []
+    def _convert_to_programs_and_disciplines(self, text: str) -> list[Competition]:
+        items = []
 
         for block in text.split(','):
             block = block.strip()
@@ -171,17 +136,17 @@ class ParserPDF:
 
             competition = competition.strip()
             if name == 'КЛАСС':
-                programs.append(Competition(name=competition))
+                items.append(Competition(name=competition, type='program'))
             elif name.lower().startswith('дисциплин'):
-                disciplines.append(Competition(name=competition))
+                items.append(Competition(name=competition, type='discipline'))
             elif name == competition:
-                disciplines.append(Competition(name=competition))
+                items.append(Competition(name=competition, type='discipline'))
 
-        return Competitions(programs=programs, disciplines=disciplines)
+        return items
 
     def _convert_to_person_requirements(self, text: str):
         words = text.split(' ')
-        people: list[PersonRequirements] = []
+        people: list[AgeGroup] = []
         start = None
         end = None
         for i, word in enumerate(words):
@@ -207,7 +172,7 @@ class ParserPDF:
             elif word == 'до':
                 end = int(words[i + 1])
             else:
-                people.append(PersonRequirements(name=word))
+                people.append(AgeGroup(name=word))
 
         for person in people:
             person.start = start
@@ -218,34 +183,45 @@ class ParserPDF:
         city_block = next(gen)
         split = city_block.text[1].split(',')
         if len(split) == 2:
-            event_map = EventMap(country=city_block.text[0], region=split[0], city=split[1].strip(' '))
+            event_map = Location(country=city_block.text[0], region=split[0], city=split[1].strip(' '))
         else:
-            event_map = EventMap(country=city_block.text[0], region=None, city=split[0].strip(' '))
+            event_map = Location(country=city_block.text[0], region=None, city=split[0].strip(' '))
         return event_map
 
     def _handle_name_sport_row(self, gen: Generator, sport_block: Block) -> Row:
-        # logger.info('sport_block %s', sport_block)
-        sport_event = SportEvent(id=sport_block.text[0], name=sport_block.text[1])
-        if len(sport_block.text) < 2:
-            logger.warning('sport block with text less then 2! %s', sport_block)
+        date_block = next(gen)
+        return self._handle_after_date_block(gen, sport_block, date_block)
+
+    def _handle_after_date_block(self, gen: Generator,
+                                 sport_block: Block,
+                                 date_block: Block):
+        event_id = sport_block.text[0]
+        event_name = sport_block.text[1]
+        if len(sport_block.text) < 4:
+            # logger.warning('sport block with text less then 2! %s', sport_block)
             reqs = []
+            competitions = []
         else:
             reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
-        date_block = next(gen)
-        interval_event = IntervalEvent(start_date=date_block.text[0], end_date=date_block.text[1])
-        competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
-        event_map = self._create_event_map(gen)
-        # logger.info('event_map %s, interval_event %s , sport_event %s', event_map, interval_event, sport_event)
+            competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
 
-        name_city: str
+        location = self._create_event_map(gen)
+
         count_block = next(gen)
-        row = Row(sport_event=sport_event, interval=interval_event, map=event_map,
-                  count_people=count_block.text[0],
-                  sport=self._current_sport,
-                  category=self._current_category,
-                  reqs=reqs,
-                  competitions=competitions
-                  )
+        event = Event(
+            id=event_id, name=event_name, start_date=date_block.text[0], end_date=date_block.text[1],
+            count_people=count_block.text[0]
+        )
+        event_type = EventType(sport=self._current_sport,
+                               category=self._current_category, )
+
+        row = Row(
+            event_type=event_type,
+            location=location,
+            reqs=reqs,
+            event=event,
+            competitions=competitions,
+        )
         # logger.info('row %s', row)
         return row
 
@@ -258,7 +234,8 @@ class ParserPDF:
             try:
                 res = self._parse_row(gen)
             except Exception as e:
-                logger.exception('Exception in parsing rows', exc_info=e)
+                pass
+                # logger.exception('Exception in parsing rows', exc_info=e)
             else:
                 if res is None:
                     break

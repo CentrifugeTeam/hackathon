@@ -17,7 +17,6 @@ crud_events = CrudAPIRouter(Context(schema=EventRead,
                                     delete_all_route=False,
                                     ))
 ### TODO сделать для дисциплин и программ взятие через event_id
-### TODO create migrations!
 manager = BaseManager(Competition)
 crud_competition = CrudAPIRouter(Context(schema=CompetitionRead,
                                          update_schema=EventRead,
