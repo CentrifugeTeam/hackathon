@@ -1,18 +1,25 @@
-import { useEffect, useState } from "react";
-import { MiniCartSportEvent } from "../../shared/ui/components/MiniCardSportEvent/MiniCartSportEvent";
+import { MiniCartSportEvent } from "../../shared/ui/components/MiniCardSportEvent/";
 import { FilterForm } from "../../features/Filter/ui/FilterForm";
-import { events } from "../../shared/api/getSportEvents"; // Импортируем данные
+import { useSportEvents } from "../../shared/api/events";
 import styles from "./mainpage.module.scss";
 import { getEventStatus } from "../../shared/utils/getEventStatus";
 import { News } from "../../shared/ui/components/News";
-import { ICartSportEvent } from "../../shared/interfaces";
 
 export const MainPage = () => {
-  const [data, setData] = useState<ICartSportEvent[]>(events); // Используем примерные события
+  const page = 1; // Страница по умолчанию
+  const size = 20; // Размер страницы
 
-  useEffect(() => {
-    // запросы
-  }, []);
+  // Используем хук для запроса данных
+  const { data, isLoading, error } = useSportEvents(page, size);
+
+  // Показать загрузку или ошибку
+  if (isLoading) {
+    return <div>Загрузка...</div>;
+  }
+
+  if (error instanceof Error) {
+    return <div>Ошибка: {error.message}</div>;
+  }
 
   return (
     <>
@@ -24,7 +31,7 @@ export const MainPage = () => {
       <News />
       <FilterForm />
       <div className={styles.miniCards}>
-        {data.map((event) => {
+        {data?.items.map((event) => {
           const { status, statusColor } = getEventStatus(
             event.start_date,
             event.end_date

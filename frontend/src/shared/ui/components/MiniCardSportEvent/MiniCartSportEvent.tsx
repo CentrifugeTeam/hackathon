@@ -20,7 +20,6 @@ export const MiniCartSportEvent: React.FC<CartSportEventProps> = ({
   statusColor,
   status,
 }) => {
-  // Находим соответствующую локацию, возрастную группу и соревнование по их ID
   const location: ILocation | undefined = locations.find(
     (loc) => loc.id === data.location_id
   );
