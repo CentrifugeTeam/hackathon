@@ -24,10 +24,6 @@ async def update_db(sessionmaker, rows: list[Row]):
             # await _handle_row(session, row)
 
 
-async def _handle_row(session, row: Row):
-    obj = await _create_if_dont_exist(session, row.model_dump(by_alias=True), EventTypeSchema)
-
-
 async def _create_if_dont_exist[DBModel](session: AsyncSession, _dict: dict, model: type[DBModel]) -> DBModel:
     stmt = select(model)
     for key, value in _dict.items():

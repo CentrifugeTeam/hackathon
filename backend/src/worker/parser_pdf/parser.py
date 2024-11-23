@@ -170,6 +170,8 @@ class ParserPDF:
             elif word == 'до':
                 end = int(words[i + 1])
             else:
+                if word[0].isupper() or not word.isalpha() or word.istitle():
+                    continue
                 people.append(AgeGroupSchema(name=word))
 
         for person in people:
@@ -181,18 +183,20 @@ class ParserPDF:
         city_block = next(gen)
         split = city_block.text[1].split(',')
         if len(split) == 2:
-            split[1]: str
-            city = split[1].strip(' ').removeprefix('Город').removeprefix('г.').removeprefix('г').strip(' ')
+            city = self._parse_city(split[1])
             event_map = LocationSchema(country=city_block.text[0], region=split[0], city=city)
         else:
             split[0]: str
-            city = split[0].strip(' ').removeprefix('Город').removeprefix('г.').removeprefix('г').strip(' ')
+            city = self._parse_city(split[0])
             event_map = LocationSchema(country=city_block.text[0], region=None, city=city)
         return event_map
 
     def _handle_name_sport_row(self, gen: Generator, sport_block: Block) -> Row:
         date_block = next(gen)
         return self._handle_after_date_block(gen, sport_block, date_block)
+
+    def _parse_city(self, city: str):
+        return city.strip(' ').removeprefix('Город').removeprefix('г.').removeprefix('Г.').removeprefix('г').strip(' ')
 
     def _handle_after_date_block(self, gen: Generator,
                                  sport_block: Block,
@@ -206,9 +210,10 @@ class ParserPDF:
         else:
             reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
 
-        if len(sport_block.text) < 4:
-            # logger.warning('sport block with text less then 4! %s', sport_block)
-            competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
+        if len(sport_block.text) > 5:
+            competitions = self._convert_to_programs_and_disciplines(" ".join(sport_block.text[2:]))
+        elif len(sport_block.text) < 3:
+            competitions = self._convert_to_programs_and_disciplines(sport_block.text[2])
         else:
             competitions = []
 

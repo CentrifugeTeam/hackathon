@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class Location(BaseModel):
     country: str
     region: str | None
@@ -8,3 +9,7 @@ class Location(BaseModel):
 
 class LocationRead(Location):
     id: int
+
+
+class LocationSearch(BaseModel):
+    city: str

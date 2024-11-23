@@ -44,6 +44,8 @@ class CrudEventAPIRouter(CrudAPIRouter):
                 participant_type: str | None = None,
                 participant_from: int | None = None,
                 participant_to: int | None = None,
+                participants_count: int | None = None,
+
                 start_date: date | None = None,
                 end_date: date | None = None,
                 session: AsyncSession = Depends(self.get_session)) -> Page[schema]:
@@ -53,8 +55,10 @@ class CrudEventAPIRouter(CrudAPIRouter):
             regions = regions if regions is None else regions.split(';')
 
             return await self.manager.paginated_list(session,
+                                                     participants_count=participants_count,
                                                      filter_expressions={
                                                          EventType.sport.in_: sports,
+                                                         SportEvent.category.in_: categories,
                                                          Location.city.in_: cities,
                                                          Location.region.in_: regions,
                                                          AgeGroup.name.ilike: participant_type,
