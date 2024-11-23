@@ -1,12 +1,8 @@
 from typing import Any
 from fastapi import Request, Depends
 from fastapi_pagination import Page
-from fastapi_sqlalchemy_toolkit import ordering_depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
-
 from crud import Context
-from crud.openapi_responses import not_found_response
 from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType

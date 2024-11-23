@@ -23,10 +23,8 @@ class AgeGroup(IDMixin, Base):
 
 class EventType(IDMixin, Base):
     __tablename__ = 'event_types'
-    sport: Mapped[str] = mapped_column(String(length=250), nullable=False)
-    category: Mapped[str] = mapped_column(String(length=250), nullable=False)
+    sport: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
     sports: Mapped[list['SportEvent']] = relationship(back_populates='type_event', cascade='delete')
-    __table_args__ = (UniqueConstraint('sport', 'category', name='unique_sport_and_columns'),)
 
 
 class Competition(IDMixin, Base):
@@ -40,6 +38,7 @@ class Competition(IDMixin, Base):
 class SportEvent(Base):
     __tablename__ = 'events'
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    category: Mapped[str] = mapped_column(String(length=250), nullable=False)
 
     name: Mapped[str] = mapped_column(String(length=700), nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)  # Дата начала
