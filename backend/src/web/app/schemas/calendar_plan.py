@@ -15,12 +15,12 @@ class AgeGroupRead(AgeGroup):
     id: int
 
 
-class SportEventType(BaseModel):
+class EventTypeSchema(BaseModel):
     sport: str
     category: str
 
 
-class SportEventTypeRead(SportEventType):
+class EventTypeSchemaRead(EventTypeSchema):
     id: int
 
 
@@ -55,7 +55,7 @@ class Event(EventBase):
     location: LocationRead
     age_groups: list[AgeGroupRead]
     competitions: list[CompetitionRead]
-    type_event: SportEventTypeRead
+    type_event: EventTypeSchemaRead
 
 
 class EventRead(Event):

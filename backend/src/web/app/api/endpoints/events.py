@@ -11,7 +11,7 @@ from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType
 from ...managers import BaseManager
-from ...schemas.calendar_plan import EventRead, LocationRead, AgeGroupRead
+from ...schemas.calendar_plan import EventRead, LocationRead, AgeGroupRead, EventTypeSchemaRead
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -46,7 +46,6 @@ class CrudEventAPIRouter(CrudAPIRouter):
             age_names = age_names if age_names is None else age_names.split(';')
             age_groups = age_groups if age_groups is None else age_groups.split(';')
 
-            # logger.info('order by %s', order_by)
             return await self.manager.paginated_list(session,
                                                      filter_expressions={
                                                          EventType.sport.in_: sports,
@@ -101,7 +100,7 @@ class CrudEventTypesAPIRouter(CrudAPIRouter):
             )
 
 
-crud_event_types = CrudEventTypesAPIRouter(Context(schema=LocationRead,
+crud_event_types = CrudEventTypesAPIRouter(Context(schema=EventTypeSchemaRead,
                                                    update_schema=EventRead,
                                                    create_schema=EventRead,
                                                    manager=event_types_manager, get_session=get_session,

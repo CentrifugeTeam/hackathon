@@ -58,7 +58,6 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
         # Теперь создаем или находим EventType
 
         event_type = await _create_if_dont_exist(session, row.event_type.model_dump(by_alias=True), EventType)
-
         # Создаем событие
 
         stmt = select(SportEvent).where(SportEvent.id == row.event.id)
