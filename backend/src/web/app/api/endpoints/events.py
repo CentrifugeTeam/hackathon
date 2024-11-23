@@ -1,6 +1,7 @@
 from typing import Any
 from fastapi import Request, Depends
 from fastapi_pagination import Page
+
 from fastapi_sqlalchemy_toolkit import ordering_depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -8,9 +9,9 @@ from crud import Context
 from datetime import date
 from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
-from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType, M2MAges
+from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType
 from ...managers import BaseManager
-from ...schemas.event import EventBulkRead, EventBulk, EventRead, EventSearch, EventTest, Age
+from ...schemas.event import EventBulkRead
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -27,7 +28,6 @@ class CrudEventAPIRouter(CrudAPIRouter):
 
     def _get_all(self, *args: Any, **kwargs: Any):
         schema = self.schema
-
 
         @self.get('/')
         async def func(  # order_by=ordering_depends(children_ordering_fields),
@@ -52,6 +52,7 @@ class CrudEventAPIRouter(CrudAPIRouter):
                                                          EventType.category.in_: categories,
                                                          Location.city.in_: cities,
                                                          Location.region.in_: regions,
+
                                                      },
                                                      options=[joinedload(SportEvent.location),
                                                               joinedload(SportEvent.age_groups),
