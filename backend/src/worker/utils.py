@@ -29,15 +29,23 @@ async def _handle_row(session, row: Row):
 async def _create_if_dont_exist[DBModel](session: AsyncSession, _dict: dict, model: type[DBModel]) -> DBModel:
     stmt = select(model)
     for key, value in _dict.items():
+        if isinstance(value, str):
+            value = value.strip()
+
         model_key = getattr(model, key)
         stmt = stmt.where(model_key == value)
 
     obj = await session.scalar(stmt)
     if obj is None:
-        obj = model(**_dict)
-        session.add(obj)
-        await session.commit()
+        await _create_model(session, _dict, model)
 
+    return obj
+
+
+async def _create_model(session, _dict, model):
+    obj = model(**_dict)
+    session.add(obj)
+    await session.commit()
     return obj
 
 
@@ -48,11 +56,15 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
         location = await _create_if_dont_exist(session, row.location.model_dump(by_alias=True), Location)
 
         # Теперь создаем или находим EventType
-        event_type = await _create_if_dont_exist(session, row.event_type.model_dump(by_alias=True), EventType)
 
+        event_type = await _create_if_dont_exist(session, row.event_type.model_dump(by_alias=True), EventType)
+        logger.info('event-type with id %d', event_type.id)
         # Создаем событие
-        event = await _create_if_dont_exist(session, {**row.event.model_dump(by_alias=True), 'location_id': location.id,
-                                                      'type_event_id': event_type.id}, SportEvent)
+
+        event = await session.get(SportEvent, row.event.id)
+        if event is None:
+            event = await _create_model(session, {**row.event.model_dump(by_alias=True), 'location_id': location.id,
+                                                  'type_event_id': event_type.id}, SportEvent)
 
         # Сохраняем возрастные группы (AgeGroup)
         for req in row.reqs:
@@ -62,8 +74,6 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
         for competition in row.competitions:
             await _create_if_dont_exist(session, {**competition.model_dump(by_alias=True), 'event_id': event.id},
                                         Competition)
-        # Завершаем транзакцию
-        logger.info('Row created %s', row)
 
     except SQLAlchemyError as e:
         # Логируем ошибку, если она возникла

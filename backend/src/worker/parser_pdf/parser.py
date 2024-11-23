@@ -179,13 +179,17 @@ class ParserPDF:
             person.end = end
             yield person
 
-    def _create_event_map(self, gen):
+    def _create_location(self, gen):
         city_block = next(gen)
         split = city_block.text[1].split(',')
         if len(split) == 2:
-            event_map = LocationSchema(country=city_block.text[0], region=split[0], city=split[1].strip(' '))
+            split[1]: str
+            city = split[1].strip(' ').city.removeprefix('Город ').removeprefix('г. ')
+            event_map = LocationSchema(country=city_block.text[0], region=split[0], city=city)
         else:
-            event_map = LocationSchema(country=city_block.text[0], region=None, city=split[0].strip(' '))
+            split[0]: str
+            city = split[0].strip(' ').city.removeprefix('Город ').removeprefix('г. ')
+            event_map = LocationSchema(country=city_block.text[0], region=None, city=city)
         return event_map
 
     def _handle_name_sport_row(self, gen: Generator, sport_block: Block) -> Row:
@@ -205,7 +209,7 @@ class ParserPDF:
             reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
             competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
 
-        location = self._create_event_map(gen)
+        location = self._create_location(gen)
 
         count_block = next(gen)
         event = EventSchema(
@@ -213,7 +217,7 @@ class ParserPDF:
             count_people=count_block.text[0]
         )
         event_type = EventTypeSchema(sport=self._current_sport,
-                                     category=self._current_category, )
+                                     category=self._current_category)
 
         row = Row(
             event_type=event_type,

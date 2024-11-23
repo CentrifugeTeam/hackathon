@@ -54,6 +54,4 @@ class SportEvent(Base):
     age_groups: Mapped[list[AgeGroup]] = relationship(back_populates='sport', cascade='delete')
     competitions: Mapped[list[Competition]] = relationship(back_populates='sport', cascade='delete')
 
-# TODO: Сделать схему бд совместимую с sqlalchemy-toolkit с фильтрацией (нужен только 1tomany) и за сидить данные, чтобы проверить
-# TODO: Сделать добавление таблиц в worker через pydantic model_dump и field_serializers
 # TODO: воркер работает не корректно с age
