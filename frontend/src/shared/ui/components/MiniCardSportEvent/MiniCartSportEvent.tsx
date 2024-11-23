@@ -1,16 +1,17 @@
 import React from "react";
 import styles from "./MiniCartSportEvent.module.scss";
-import {
-  ICartSportEvent,
-  IAges,
-  ILocation,
-  ICompetitions,
-} from "../../../interfaces";
 import { formatDateRange } from "../../../utils/formatDateRange";
-import { ages, locations, competitions } from "../../../api/getSportEvents";
 
 interface CartSportEventProps {
-  data: ICartSportEvent;
+  data: {
+    id: number;
+    name: string;
+    start_date: string;
+    end_date: string;
+    participants_count: number;
+    city: string;
+    sport: string;
+  };
   statusColor: string;
   status: string;
 }
@@ -20,16 +21,6 @@ export const MiniCartSportEvent: React.FC<CartSportEventProps> = ({
   statusColor,
   status,
 }) => {
-  const location: ILocation | undefined = locations.find(
-    (loc) => loc.id === data.location_id
-  );
-  const ageGroup: IAges | undefined = ages.find(
-    (age) => age.id === data.age_group_id
-  );
-  const competition: ICompetitions | undefined = competitions.find(
-    (com) => com.id === data.type_event_id
-  );
-
   return (
     <div className={styles.card}>
       <div className={styles.headerCard}>
@@ -38,34 +29,34 @@ export const MiniCartSportEvent: React.FC<CartSportEventProps> = ({
         </p>
         <p>СПОРТИВНЫЕ</p>
       </div>
+      {/* Название события */}
       <h2 className={styles.eventName}>{data.name}</h2>
+
       <h4 className={`${styles.eventText} ${styles.eventSubTitle}`}>
         {data.name} МЕРОПРИЯТИЕ
       </h4>
+
+      {/* Вид спорта */}
       <h3 className={styles.typeEvent}>
         <span className={styles.eventText}>ВИД СПОРТА: </span>
-        {competition ? competition.name : "Тип спорта недоступен"}
+        {data.sport || "Тип спорта недоступен"}
       </h3>
-      <h3 className={styles.ageGroup}>
-        {ageGroup
-          ? `${ageGroup.name} ${ageGroup.start}-${ageGroup.end}`
-          : "Возрастная группа недоступна"}
-      </h3>
-      <h5 className={`${styles.discipline} ${styles.eventText}`}>
-        {competition?.type}
-      </h5>
+
+      {/* Количество участников */}
       <h3 className={styles.participantsCount}>
         {data.participants_count} УЧАСТНИКОВ
       </h3>
+
       <hr className={styles.hr} style={{ color: statusColor }} />
+
+      {/* Локация (город + даты) */}
       <h3 className={styles.location}>
-        {location
-          ? `${location.city}, ${formatDateRange(
-              data.start_date,
-              data.end_date
-            )}`
+        {data.city
+          ? `${data.city}, ${formatDateRange(data.start_date, data.end_date)}`
           : "Локация недоступна"}
       </h3>
+
+      {/* ID события */}
       <h4 className={styles.id}>№ ЕКП {data.id}</h4>
     </div>
   );

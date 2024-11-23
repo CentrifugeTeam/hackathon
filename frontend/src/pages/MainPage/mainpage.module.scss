@@ -10,7 +10,8 @@
 }
 
 .miniCards {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Три столбца одинаковой ширины */
+  gap: 20px; /* Расстояние между карточками */
+  margin-top: 20px;
 }
