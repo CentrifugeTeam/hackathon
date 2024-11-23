@@ -6,6 +6,8 @@ from pymupdf import Document, Page
 from dataclasses import dataclass
 from pydantic import BaseModel, validator, field_validator, Field
 from logging import getLogger
+from sqlalchemy.orm import Session
+from ...storage.db.models import SportEvent, EventType, Location, AgeGroup, Competition
 
 logger = getLogger(__name__)
 
@@ -76,191 +78,272 @@ class Row(BaseModel):
 
 class ParserPDF:
 
-    def __init__(self):
-        self._current_sport: str | None = None
-        self._current_category: str | None = None
-        self.items_on_update = None
-        self._key_words_for_choice_sport = [
-            'Основной состав',
-            "Молодежный (резервный) состав",
-        ]
+	def __init__(self, session: Session):
+		self._current_sport: str | None = None
+		self._current_category: str | None = None
+		self.items_on_update = None
+		self._key_words_for_choice_sport = [
+			'Основной состав',
+			"Молодежный (резервный) состав",
+		]
+		self.session = session
 
-    def grap_rows(self, file: BinaryIO):
-        logger.info('start parcing')
-        pdf = pymupdf.open(file)
-        gen = self._create_generator_for_page(pdf[0])
-        logger.info('start proccessing page 1')
-        result = []
-        for row in self._start_parse_pdf(gen):
-            result.append(row)
-        logger.info('finished proccessing page 1')
+	def grap_rows(self, file: BinaryIO):
+		logger.info('start parcing')
+		pdf = pymupdf.open(file)
+		gen = self._create_generator_for_page(pdf[0])
+		logger.info('start proccessing page 1')
+		result = []
+		for row in self._start_parse_pdf(gen):
+			result.append(row)
+			# сохраняем данные
+			save_event_and_related_data(self.session, row)
+		logger.info('finished proccessing page 1')
 
-        for page in pdf[1:]:
-            page: Page
-            # logger.info('start proccessing page %d', page.number)
-            gen = self._create_generator_for_page(page)
-            for row in self._parse_rows(gen):
-                result.append(row)
-            # logger.info('finished proccessing page %d', page.number)
+		for page in pdf[1:]:
+			page: Page
+			# logger.info('start proccessing page %d', page.number)
+			gen = self._create_generator_for_page(page)
+			for row in self._parse_rows(gen):
+				result.append(row)
+				# сохраняем данные
+				save_event_and_related_data(self.session, row)
+			# logger.info('finished proccessing page %d', page.number)
 
-        logger.info('end parcing')
-        return result
+		logger.info('end parcing')
+		return result
 
-    def _start_parse_pdf(self, gen: Generator):
-        # в начале документа иду до основного состава и беру спорт
-        for block in gen:
-            if len(block.text) == 1 and block.text[0] in self._key_words_for_choice_sport:
-                self._current_category = block.text[0]
-                self._current_sport = self._current_sport[0]
-                # logger.info('found first categories %s and sports %s', self._current_category, self._current_sport)
-                return self._parse_rows(gen)
-            else:
-                self._current_sport = block.text
+	def _start_parse_pdf(self, gen: Generator):
+		# в начале документа иду до основного состава и беру спорт
+		for block in gen:
+			if len(block.text) == 1 and block.text[0] in self._key_words_for_choice_sport:
+				self._current_category = block.text[0]
+				self._current_sport = self._current_sport[0]
+				# logger.info('found first categories %s and sports %s', self._current_category, self._current_sport)
+				return self._parse_rows(gen)
+			else:
+				self._current_sport = block.text
 
-    def _create_generator_for_page(self, page: Page):
-        return (self._parse_raw_data(data) for data in page.get_text('blocks'))
+	def _create_generator_for_page(self, page: Page):
+		return (self._parse_raw_data(data) for data in page.get_text('blocks'))
 
-    def _handle_default_row(self, gen: Generator, blocks: tuple[Block, Block]) -> Row:
-        return self._handle_after_date_block(gen, *blocks)
+	def _handle_default_row(self, gen: Generator, blocks: tuple[Block, Block]) -> Row:
+		return self._handle_after_date_block(gen, *blocks)
 
-    def _convert_to_programs_and_disciplines(self, text: str) -> list[Competition]:
-        items = []
+	def _convert_to_programs_and_disciplines(self, text: str) -> list[Competition]:
+		items = []
 
-        for block in text.split(','):
-            block = block.strip()
-            index = block.find(' ')
-            name = block[:index]
-            competition = block[index + 1:]
-            if competition.startswith('- '):
-                competition = competition[2:]
+		for block in text.split(','):
+			block = block.strip()
+			index = block.find(' ')
+			name = block[:index]
+			competition = block[index + 1:]
+			if competition.startswith('- '):
+				competition = competition[2:]
 
-            competition = competition.strip()
-            if name == 'КЛАСС':
-                items.append(Competition(name=competition, type='program'))
-            elif name.lower().startswith('дисциплин'):
-                items.append(Competition(name=competition, type='discipline'))
-            elif name == competition:
-                items.append(Competition(name=competition, type='discipline'))
+			competition = competition.strip()
+			if name == 'КЛАСС':
+				items.append(Competition(name=competition, type='program'))
+			elif name.lower().startswith('дисциплин'):
+				items.append(Competition(name=competition, type='discipline'))
+			elif name == competition:
+				items.append(Competition(name=competition, type='discipline'))
 
-        return items
+		return items
 
-    def _convert_to_person_requirements(self, text: str):
-        words = text.split(' ')
-        people: list[AgeGroup] = []
-        start = None
-        end = None
-        for i, word in enumerate(words):
-            word = word.strip(',. ')
-            if word[0].isdigit():
-                split = word.split('-')
-                if len(split) == 2:
-                    start = int(split[0])
-                    end = int(split[1])
-            elif word in ['и', "старше", "младше"]:
-                continue
-            elif word == 'лет':
-                for person in people:
-                    person.start = start
-                    person.end = end
-                    yield person
+	def _convert_to_person_requirements(self, text: str):
+		words = text.split(' ')
+		people: list[AgeGroup] = []
+		start = None
+		end = None
+		for i, word in enumerate(words):
+			word = word.strip(',. ')
+			if word[0].isdigit():
+				split = word.split('-')
+				if len(split) == 2:
+					start = int(split[0])
+					end = int(split[1])
+			elif word in ['и', "старше", "младше"]:
+				continue
+			elif word == 'лет':
+				for person in people:
+					person.start = start
+					person.end = end
+					yield person
 
-                people = []
-                start = None
-                end = None
-            elif word == 'от':
-                start = int(words[i + 1])
-            elif word == 'до':
-                end = int(words[i + 1])
-            else:
-                people.append(AgeGroup(name=word))
+				people = []
+				start = None
+				end = None
+			elif word == 'от':
+				start = int(words[i + 1])
+			elif word == 'до':
+				end = int(words[i + 1])
+			else:
+				people.append(AgeGroup(name=word))
 
-        for person in people:
-            person.start = start
-            person.end = end
-            yield person
+		for person in people:
+			person.start = start
+			person.end = end
+			yield person
 
-    def _create_event_map(self, gen):
-        city_block = next(gen)
-        split = city_block.text[1].split(',')
-        if len(split) == 2:
-            event_map = Location(country=city_block.text[0], region=split[0], city=split[1].strip(' '))
-        else:
-            event_map = Location(country=city_block.text[0], region=None, city=split[0].strip(' '))
-        return event_map
+	def _create_event_map(self, gen):
+		city_block = next(gen)
+		split = city_block.text[1].split(',')
+		if len(split) == 2:
+			event_map = Location(country=city_block.text[0], region=split[0], city=split[1].strip(' '))
+		else:
+			event_map = Location(country=city_block.text[0], region=None, city=split[0].strip(' '))
+		return event_map
 
-    def _handle_name_sport_row(self, gen: Generator, sport_block: Block) -> Row:
-        date_block = next(gen)
-        return self._handle_after_date_block(gen, sport_block, date_block)
+	def _handle_name_sport_row(self, gen: Generator, sport_block: Block) -> Row:
+		date_block = next(gen)
+		return self._handle_after_date_block(gen, sport_block, date_block)
 
-    def _handle_after_date_block(self, gen: Generator,
-                                 sport_block: Block,
-                                 date_block: Block):
-        event_id = sport_block.text[0]
-        event_name = sport_block.text[1]
-        if len(sport_block.text) < 4:
-            # logger.warning('sport block with text less then 2! %s', sport_block)
-            reqs = []
-            competitions = []
-        else:
-            reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
-            competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
+	def _handle_after_date_block(self, gen: Generator,
+									sport_block: Block,
+									date_block: Block):
+		event_id = sport_block.text[0]
+		event_name = sport_block.text[1]
+		if len(sport_block.text) < 4:
+			# logger.warning('sport block with text less then 2! %s', sport_block)
+			reqs = []
+			competitions = []
+		else:
+			reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
+			competitions = self._convert_to_programs_and_disciplines(sport_block.text[3])
 
-        location = self._create_event_map(gen)
+		location = self._create_event_map(gen)
 
-        count_block = next(gen)
-        event = Event(
-            id=event_id, name=event_name, start_date=date_block.text[0], end_date=date_block.text[1],
-            count_people=count_block.text[0]
+		count_block = next(gen)
+		event = Event(
+			id=event_id, name=event_name, start_date=date_block.text[0], end_date=date_block.text[1],
+			count_people=count_block.text[0]
+		)
+		event_type = EventType(sport=self._current_sport,
+								category=self._current_category, )
+
+		row = Row(
+			event_type=event_type,
+			location=location,
+			reqs=reqs,
+			event=event,
+			competitions=competitions,
+		)
+		# сохраняем данные
+		save_event_and_related_data(self.session, row)
+		# logger.info('row %s', row)
+		return row
+
+	def _handle_category_sport_row(self, gen: Generator) -> Row:
+		# logger.info('row %s', row)
+		pass
+
+	def _parse_rows(self, gen: Generator) -> Row:
+		while True:
+			try:
+				res = self._parse_row(gen)
+			except Exception as e:
+				pass
+				# logger.exception('Exception in parsing rows', exc_info=e)
+			else:
+				if res is None:
+					break
+				yield res
+
+	def _parse_row(self, gen: Generator) -> Row | None:
+		for blocks in batched(gen, 2):
+			if len(blocks[0].text) == 1 and len(blocks) == 2:
+				# если категория первая в списке, а второе как обычное поле
+				if blocks[0].text[0] in self._key_words_for_choice_sport:
+					self._current_category = blocks[0].text[0]
+					return self._handle_name_sport_row(gen, blocks[1])
+				# если название состава первая в списке и второе соответственно категория
+				elif blocks[1].text[0] in self._key_words_for_choice_sport:
+					self._current_sport = blocks[0].text[0]
+					self._current_category = blocks[1].text[0]
+					# return self._handle_category_sport_row(gen)
+			elif len(blocks) == 1 and blocks[0].text[0].startswith('Стр'):
+				return None
+
+			elif len(blocks) == 2:
+				return self._handle_default_row(gen, blocks)
+
+	def _parse_raw_data(self, data: tuple) -> Block:
+		block = Block(*data)
+		block.text: str  # type: ignore
+		block.text = (block.text.rstrip('\n')).split('\n')
+		return block
+
+
+
+
+
+def save_event_and_related_data(session: Session, row: Row):
+    # Сначала сохраняем или получаем существующее место
+    location_data = row.location
+    location = session.query(Location).filter_by(
+        country=location_data.country,
+        region=location_data.region,
+        city=location_data.city
+    ).first()
+
+    if location is None:
+        location = Location(
+            country=location_data.country,
+            region=location_data.region,
+            city=location_data.city
         )
-        event_type = EventType(sport=self._current_sport,
-                               category=self._current_category, )
+        session.add(location)
+        session.commit()
 
-        row = Row(
-            event_type=event_type,
-            location=location,
-            reqs=reqs,
-            event=event,
-            competitions=competitions,
+    # Теперь создаем или находим EventType
+    event_type_data = row.event_type
+    event_type = session.query(EventType).filter_by(
+        sport=event_type_data.sport,
+        category=event_type_data.category
+    ).first()
+
+    if event_type is None:
+        event_type = EventType(
+            sport=event_type_data.sport,
+            category=event_type_data.category
         )
-        # logger.info('row %s', row)
-        return row
+        session.add(event_type)
+        session.commit()
 
-    def _handle_category_sport_row(self, gen: Generator) -> Row:
-        # logger.info('row %s', row)
-        pass
+    # Создаем событие
+    event_data = row.event
+    event = SportEvent(
+        name=event_data.name,
+        start_date=event_data.start_date,
+        end_date=event_data.end_date,
+        participants_count=event_data.count_people,
+        type_event_id=event_type.id,
+        location_id=location.id
+    )
+    session.add(event)
+    session.commit()
 
-    def _parse_rows(self, gen: Generator) -> Row:
-        while True:
-            try:
-                res = self._parse_row(gen)
-            except Exception as e:
-                pass
-                # logger.exception('Exception in parsing rows', exc_info=e)
-            else:
-                if res is None:
-                    break
-                yield res
+    # Сохраняем возрастные группы (AgeGroup)
+    for req in row.reqs:
+        age_group_data = req
+        age_group = AgeGroup(
+            name=age_group_data.name,
+            age_from=age_group_data.start,
+            age_to=age_group_data.end,
+            event_id=event.id
+        )
+        session.add(age_group)
 
-    def _parse_row(self, gen: Generator) -> Row | None:
-        for blocks in batched(gen, 2):
-            if len(blocks[0].text) == 1 and len(blocks) == 2:
-                # если категория первая в списке, а второе как обычное поле
-                if blocks[0].text[0] in self._key_words_for_choice_sport:
-                    self._current_category = blocks[0].text[0]
-                    return self._handle_name_sport_row(gen, blocks[1])
-                # если название состава первая в списке и второе соответственно категория
-                elif blocks[1].text[0] in self._key_words_for_choice_sport:
-                    self._current_sport = blocks[0].text[0]
-                    self._current_category = blocks[1].text[0]
-                    # return self._handle_category_sport_row(gen)
-            elif len(blocks) == 1 and blocks[0].text[0].startswith('Стр'):
-                return None
+    # Сохраняем дисциплины (Competition)
+    for competition in row.competitions:
+        competition_data = competition
+        competition_record = Competition(
+            name=competition_data.name,
+            type=competition_data.type,
+            event_id=event.id
+        )
+        session.add(competition_record)
 
-            elif len(blocks) == 2:
-                return self._handle_default_row(gen, blocks)
-
-    def _parse_raw_data(self, data: tuple) -> Block:
-        block = Block(*data)
-        block.text: str  # type: ignore
-        block.text = (block.text.rstrip('\n')).split('\n')
-        return block
+    # Завершаем транзакцию
+    session.commit()
