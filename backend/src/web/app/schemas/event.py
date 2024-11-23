@@ -11,6 +11,7 @@ class EventBase(BaseModel):
     start_date: date
     end_date: date
     participants_count: int
+    category: str
 
 
 class Event(EventBase):
