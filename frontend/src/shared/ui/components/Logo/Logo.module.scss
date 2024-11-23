@@ -1,0 +1,21 @@
+.logo {
+	display: flex;
+	flex-direction: column;
+
+	.sport {
+		font-family: "NauryzRedKeds", Arial, sans-serif;
+		color: #3169f2;
+		letter-spacing: 1px;
+	}
+
+	.calendar {
+		font-family: "Evolventa", Arial, sans-serif;
+		letter-spacing: 2px;
+	}
+
+	.sport,
+	.calendar {
+		font-size: 24px;
+		font-weight: bold;
+	}
+}

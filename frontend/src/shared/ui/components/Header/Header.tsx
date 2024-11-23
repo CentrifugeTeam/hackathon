@@ -1,14 +1,12 @@
 import styles from "./header.module.scss";
 import Bell from "../../../../assets/proicons_bell.svg";
+import { Logo } from "../Logo";
 
 export const Header = () => {
   return (
     <header className={styles.header}>
       <div className={styles.content}>
-        <div className={styles.logo}>
-          <p className={styles.sport}>SPORT</p>
-          <p className={styles.calendar}>КАЛЕНДАРЬ</p>
-        </div>
+				<Logo />
         <section className={styles.elements}>
           <a className={styles.elem}>Минспорт Росcия</a>
           <a className={styles.elem}>ФГИС “Спорт”</a>

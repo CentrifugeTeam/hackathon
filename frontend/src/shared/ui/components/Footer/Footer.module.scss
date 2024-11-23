@@ -1,0 +1,30 @@
+.footer {
+  height: 250px;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  background-color: #3168f21b;
+  font-family: "Evolventa", Arial, sans-serif;
+
+  .content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .context {
+      display: flex;
+      margin-left: 112px;
+      flex-direction: column;
+
+      .text {
+        margin-top: 10px;
+        color: #333333;
+      }
+
+      .text:hover {
+        color: #3169f2;
+        cursor: pointer;
+      }
+    }
+  }
+}
