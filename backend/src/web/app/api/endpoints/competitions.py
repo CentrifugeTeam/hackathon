@@ -9,7 +9,7 @@ from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent, Competition, EventType
 from ...managers import BaseManager
-from ...schemas.calendar_plan import EventRead,  CompetitionRead
+from ...schemas.event import EventBulkRead,  CompetitionRead
 
 
 competition_manager = BaseManager(Competition)
@@ -20,6 +20,13 @@ class CrudCompetitionAPIRouter(CrudAPIRouter):
     def _get_one(self, *args: Any, **kwargs: Any):
         super()._get_one()
         schema = self.schema
+
+        # @self.get('/search')
+        # async def func(name: str | None = None, session: AsyncSession = Depends(get_session)) -> Page[EventSearch]:
+        #     return await event_manager.paginated_list(session, filter_expressions={
+        #         SportEvent.name.ilike: f'%{name}%' if name else None
+        #     })
+
         @self.get('/events/{id}',
                   responses={**not_found_response},
                   response_model=list[self.schema])
@@ -32,8 +39,8 @@ class CrudCompetitionAPIRouter(CrudAPIRouter):
 
 
 crud_competition = CrudCompetitionAPIRouter(Context(schema=CompetitionRead,
-                                                    update_schema=EventRead,
-                                                    create_schema=EventRead,
+                                                    update_schema=EventBulkRead,
+                                                    create_schema=EventBulkRead,
                                                     manager=competition_manager, get_session=get_session,
                                                     create_route=False,
                                                     update_route=False,

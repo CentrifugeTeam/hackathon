@@ -49,9 +49,11 @@ class CRUDTemplate(APIRouter):
         self.ctx = context
         self.schema = self.ctx['schema']
         self.create_schema = self.ctx['create_schema']
-        self.update_schema  = self.ctx['update_schema']
+        self.update_schema = self.ctx['update_schema']
         self.manager = self.ctx['manager']
         self.get_session = self.ctx['get_session']
+
+
         if self.ctx.get('get_all_route', True):
             self._get_all()
 
@@ -70,23 +72,7 @@ class CRUDTemplate(APIRouter):
         if self.ctx.get('delete_all_route', True):
             self._delete_all()
 
-    def api_route(
-            self, path: str, *args: Any, **kwargs: Any
-    ) -> Callable[[DecoratedCallable], DecoratedCallable]:
-        """Overrides and exiting route if it exists"""
-        methods = kwargs["methods"] if "methods" in kwargs else ["GET"]
-        self.remove_api_route(path, methods)
-        return super().api_route(path, *args, **kwargs)
 
-    def remove_api_route(self, path: str, methods: List[str]) -> None:
-        methods_ = set(methods)
-
-        for route in self.routes:
-            if (
-                    route.path == path
-                    and route.methods == methods_
-            ):
-                self.routes.remove(route)
 
     @abstractmethod
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
