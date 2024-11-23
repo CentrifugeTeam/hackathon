@@ -4,14 +4,13 @@ from fastapi_pagination import Page
 from fastapi_sqlalchemy_toolkit import ordering_depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
-
 from crud import Context
-from crud.openapi_responses import not_found_response
+from datetime import date
 from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
-from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType
+from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType, M2MAges
 from ...managers import BaseManager
-from ...schemas.event import EventBulkRead, EventBulk, EventRead, EventSearch
+from ...schemas.event import EventBulkRead, EventBulk, EventRead, EventSearch, EventTest, Age
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -29,11 +28,6 @@ class CrudEventAPIRouter(CrudAPIRouter):
     def _get_all(self, *args: Any, **kwargs: Any):
         schema = self.schema
 
-        @self.get('/search')
-        async def func(name: str | None = None, session: AsyncSession = Depends(get_session)) -> Page[EventSearch]:
-            return await event_manager.paginated_list(session, filter_expressions={
-                SportEvent.name.ilike: f'%{name}%' if name else None
-            })
 
         @self.get('/')
         async def func(  # order_by=ordering_depends(children_ordering_fields),
@@ -41,15 +35,16 @@ class CrudEventAPIRouter(CrudAPIRouter):
                 categories: str | None = None,
                 cities: str | None = None,
                 regions: str | None = None,
-                age_names: str | None = None,
-                age_groups: str | None = None,
+                participant_type: str | None = None,
+                participant_from: int | None = None,
+                participant_to: int | None = None,
+                start_date: date | None = None,
+                end_date: date | None = None,
                 session: AsyncSession = Depends(self.get_session)) -> Page[schema]:
             sports = sports if sports is None else sports.split(';')
             categories = categories if categories is None else categories.split(';')
             cities = cities if cities is None else cities.split(';')
             regions = regions if regions is None else regions.split(';')
-            age_names = age_names if age_names is None else age_names.split(';')
-            age_groups = age_groups if age_groups is None else age_groups.split(';')
 
             return await self.manager.paginated_list(session,
                                                      filter_expressions={
@@ -57,7 +52,6 @@ class CrudEventAPIRouter(CrudAPIRouter):
                                                          EventType.category.in_: categories,
                                                          Location.city.in_: cities,
                                                          Location.region.in_: regions,
-                                                         # AgeGroup.
                                                      },
                                                      options=[joinedload(SportEvent.location),
                                                               joinedload(SportEvent.age_groups),

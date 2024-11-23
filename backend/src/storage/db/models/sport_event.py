@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from sqlalchemy import ForeignKey, String, Integer, Boolean, Date, BigInteger
+from sqlalchemy import ForeignKey, String, Integer, Boolean, Date, BigInteger, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, IDMixin
 
@@ -26,6 +26,7 @@ class EventType(IDMixin, Base):
     sport: Mapped[str] = mapped_column(String(length=250), nullable=False)
     category: Mapped[str] = mapped_column(String(length=250), nullable=False)
     sports: Mapped[list['SportEvent']] = relationship(back_populates='type_event', cascade='delete')
+    __table_args__ = (UniqueConstraint('sport', 'category', name='unique_sport_and_columns'),)
 
 
 class Competition(IDMixin, Base):

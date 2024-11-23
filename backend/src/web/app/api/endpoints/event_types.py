@@ -11,7 +11,8 @@ from ...dependencies.session import get_session
 from ...utils.crud import CrudAPIRouter
 from storage.db.models import SportEvent, Location, AgeGroup, Competition, EventType
 from ...managers import BaseManager
-from ...schemas.event import EventBulkRead, LocationRead, AgeGroupRead, EventTypeSchemaRead
+from ...schemas.event import EventBulkRead
+from ...schemas.event_type import EventTypeSearch, EventTypeSchemaRead
 
 event_manager = BaseManager(SportEvent)
 event_types_manager = BaseManager(EventType)
@@ -19,8 +20,14 @@ event_types_manager = BaseManager(EventType)
 
 class CrudEventTypesAPIRouter(CrudAPIRouter):
     def _get_one(self, *args: Any, **kwargs: Any):
-        super()._get_one()
         schema = self.schema
+
+        @self.get('/search')
+        async def func(name: str | None = None,
+                       session: AsyncSession = Depends(get_session)) -> Page[EventTypeSearch]:
+            return await self.manager.paginated_list(session, filter_expressions={
+                EventType.sport.ilike: f'%{name}%' if name else None
+            })
 
         @self.get('/events/{id}',
                   responses={**not_found_response},
@@ -31,6 +38,8 @@ class CrudEventTypesAPIRouter(CrudAPIRouter):
                 session,
                 event_id=event.id,
             )
+
+        super()._get_one()
 
 
 crud_event_types = CrudEventTypesAPIRouter(Context(schema=EventTypeSchemaRead,

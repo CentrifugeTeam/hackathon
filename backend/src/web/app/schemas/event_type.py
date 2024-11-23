@@ -7,3 +7,7 @@ class EventTypeSchema(BaseModel):
 class EventTypeSchemaRead(EventTypeSchema):
     id: int
 
+
+
+class EventTypeSearch(EventTypeSchema):
+    pass

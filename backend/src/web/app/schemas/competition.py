@@ -10,3 +10,8 @@ class Competition(BaseModel):
 
 class CompetitionRead(Competition):
     id: int
+
+
+class CompetitionSearch(BaseModel):
+    name: str
+    type: Literal['program', 'discipline']
