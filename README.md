@@ -1,24 +1,3 @@
-# hackathon
-
-## Конфигурация приложения
-    вся конфигурация находится в .env файле
-### Создать контейнер: 
-    docker compose build
-### Запустить контейнер:
-    docker compose up
-### Зайти в запущенный контейнер
-    docker exec -it backend bash
-### Создание миграции
-    alembic revision --autogenerate
-### Применение миграции
-    alembic upgrade head
-
-### Документация
-    http://localhost/api/docs
-
-
-
-
 # Проект-решение: Сайт Единого календарного плана физкультурных и спортивных мероприятий к Чемпионату России по спортивному программированию в области продуктового программирования
 
 ## 🌟 Описание проекта
@@ -41,19 +20,19 @@
 
 ## 🚀 Этапы разработки
 
-![Диаграмма архитектуры](диаграмма.png)
+![Диаграмма архитектуры](docs/images/solution-architecture.png)
 
 На каждом этапе разработки мы стремимся к совершенству. Наша команда использует современные методологии, что позволяет быстро адаптироваться к изменениям и эффективно решать возникающие задачи. Мы активно тестируем и внедряем новые функции, чтобы обеспечить пользователям лучший опыт.
 
 ## 👥 Команда
 
-![Слайд команды из презы](слайдкоманды.png)
+![Слайд команды](docs/images/centrifuge-team.png)
 
 Мы верим, что успех проекта зависит от слаженной работы команды. Каждый из нас привносит свои идеи и навыки, что делает нашу работу не только продуктивной, но и увлекательной!
 
 ## 🎨 Дизайн
 
-![Слайд с главными элементами дизайна](слайддизайн.png)
+![Слайд с главными элементами дизайна](docs/images/design.png)
 
 **Дизайн нашего продукта** можно посмотреть в [Figma], перейдя по этой ссылке: ( https://www.figma.com/design/0IBQTfg8RIHnx8gymibtEf/Окружной-Хакатон?node-id=0-1&node-type=canvas&t=aYf8wMSbkSeyWXWz-0). Мы уделили особое внимание эстетике и функциональности, чтобы сделать сайт не только красивым, но и удобным в использовании.
 
@@ -80,16 +59,16 @@ Our team consists of five talented specialists, each contributing their unique s
 - **Darya Yaremenko** – Project Manager who coordinates the team's work and monitors deadlines. Daria has a knack for finding common ground with each team member, ensuring harmonious collaboration.
 
 ## 🚀 Development Stages
-![Architecture Diagram](diagram.png)
+![Architecture Diagram](docs/images/solution-architecture.png)
 
 At each stage of development, we strive for excellence. Our team employs modern methodologies that allow us to quickly adapt to changes and efficiently solve emerging tasks. We actively test and implement new features to provide users with the best experience.
 
 ## 👥 Team
-![Team Slide from Presentation](team_slide.png)
+![Team Slide from Presentation](docs/images/centrifuge-team.png)
 
 We believe that the success of the project depends on the cohesive work of the team. Each of us brings our ideas and skills, making our work not only productive but also enjoyable!
 
 ## 🎨 Design
-![Slide with Main Design Elements](design_slide.png)
+![Slide with Main Design Elements](docs/images/design.png)
 
 **The design of our product** can be viewed in [Figma] by following this link: (https://www.figma.com/design/0IBQTfg8RIHnx8gymibtEf/Окружной-Хакатон?node-id=0-1&node-type=canvas&t=aYf8wMSbkSeyWXWz-0). We have paid special attention to aesthetics and functionality to make the site not only beautiful but also user-friendly.
