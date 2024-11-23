@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
 
 class AgeGroup(BaseModel):
     name: str
@@ -11,3 +12,7 @@ class AgeGroupRead(AgeGroup):
 
 
 
+
+class AgeGroupSearch(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    name: str
