@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
 import styles from "./sendemail.module.scss";
 import Close from "../../../../assets/close.svg";
 import { MultiSelectDropdown } from "../MultiSelectDropdown";
 import { useSportEvents } from "../../../../features/Filter/api/sportName";
+import { registerEmail, EmailRegistrationData } from "./api/sendEmail";
 
+// Assuming sportEventOptions is an array of objects with id and sport
 export const SendEmail = () => {
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const blockRef = useRef<HTMLDivElement>(null); // Reference to the block
@@ -11,24 +14,46 @@ export const SendEmail = () => {
 
   const [multiSelectSportType, setMultiSelectSportType] = useState<string[]>(
     []
-  );
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  ); // Selected sport types
+  const [searchQuery, setSearchQuery] = useState<string>(""); // Search query for sports
   const [email, setEmail] = useState<string>(""); // State for email input
-  const [emailError, setEmailError] = useState<boolean>(false); // State for email error
+  const [emailError, setEmailError] = useState<boolean>(false); // Email error state
 
   const {
     data: sportEventData,
     isLoading: isLoadingSports,
     error: errorSports,
     fetchNextPage: fetchNextSportPage,
-    hasNextPage: hasNextSportPage,
   } = useSportEvents(1, 10, searchQuery); // Fetch sport event options
 
+  // Assuming sportEventOptions is an array of objects { id: number, sport: string }
   const sportEventOptions = sportEventData
     ? sportEventData.pages.flatMap((page) =>
-        page.items.map((item) => item.sport)
+        page.items.map((item) => ({
+          id: item.id, // Include id
+          sport: item.sport,
+        }))
       )
     : [];
+
+  // Fixing the mutation typing to match the expected data structure
+  const { mutateAsync, isPending: isMutating } = useMutation<
+    void,
+    Error,
+    EmailRegistrationData
+  >({
+    mutationFn: registerEmail,
+    onSuccess: () => {
+      // Handle success (e.g., show a success message, reset form, etc.)
+      console.log("Registration successful!");
+      setEmail(""); // Clear email input on success
+      setMultiSelectSportType([]); // Clear selected sports
+    },
+    onError: (error: Error) => {
+      // Handle error (e.g., show an error message)
+      console.error("Error during registration:", error);
+    },
+  });
 
   // Handle closing the block when clicking outside
   const handleClickOutside = (event: MouseEvent) => {
@@ -60,13 +85,25 @@ export const SendEmail = () => {
   };
 
   // Handle email validation and submit
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (email.trim() === "") {
       setEmailError(true); // Show error if email is empty
     } else {
       setEmailError(false); // Reset error if email is valid
-      // Здесь можно выполнить дальнейшую обработку данных (например, отправка формы)
-      console.log("Email sent: ", email);
+      const selectedSportEventIds = sportEventOptions
+        .filter((sport) => multiSelectSportType.includes(sport.sport)) // Use `sport` as the filter key
+        .map((sport) => sport.id); // Get the selected sport event IDs
+
+      const data: EmailRegistrationData = {
+        email,
+        event_types_id: selectedSportEventIds,
+      };
+
+      try {
+        await mutateAsync(data); // Call the mutation to register the email with sport events
+      } catch (error) {
+        console.error("Error during registration:", error);
+      }
     }
   };
 
@@ -88,7 +125,9 @@ export const SendEmail = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)} // Update email state
-          className={`${emailError ? styles.errorInput : ""} ${styles.emailInput}`} // Add error class if email is empty
+          className={`${emailError ? styles.errorInput : ""} ${
+            styles.emailInput
+          }`} // Add error class if email is empty
         />
         {emailError && (
           <p className={styles.errorText}>Пожалуйста, введите email</p>
@@ -99,14 +138,17 @@ export const SendEmail = () => {
         label="Вид спорта"
         value={multiSelectSportType}
         setValue={setMultiSelectSportType}
-        options={sportEventOptions}
+        options={sportEventOptions.map((option) => option.sport)} // Only pass sport names here
         fetchMoreOptions={fetchNextSportPage}
-        hasNextPage={!!hasNextSportPage}
         onSearch={setSearchQuery}
       />
 
-      <button className={styles.show} onClick={handleSubmit}>
-        Отправить
+      <button
+        className={styles.show}
+        onClick={handleSubmit}
+        disabled={isMutating} // Use `isMutating` instead of `isSubmitting`
+      >
+        {isMutating ? "Отправка..." : "Отправить"}
       </button>
 
       {isLoadingSports && <p>Загрузка видов спорта...</p>}
