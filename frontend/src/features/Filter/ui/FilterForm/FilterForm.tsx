@@ -19,6 +19,7 @@ export const FilterForm = ({
 }) => {
   const [isFilterVisible, setFilterVisible] = useState(false);
 
+  // Состояния фильтров
   const [multiSelectEventName, setMultiSelectEventName] = useState<string[]>(
     []
   );
@@ -26,7 +27,7 @@ export const FilterForm = ({
     []
   );
   const [multiSelectValues3, setMultiSelectValues3] = useState<string[]>([]); // Дисциплина
-  const [multiSelectValues4, setMultiSelectValues4] = useState<string[]>([]);
+  const [multiSelectValues4, setMultiSelectValues4] = useState<string[]>([]); // Место проведения
   const [multiSelectValues5, setMultiSelectValues5] = useState<string[]>([]); // Программа
 
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -46,9 +47,14 @@ export const FilterForm = ({
       cities: multiSelectValues4.join(","),
       start_date: startDate || "2024-01-01",
       end_date: endDate || "2026-01-01",
+      sex: sex.join(","),
+      min_age: minAge,
+      max_age: maxAge,
+      member_count: memberCount,
     };
-		Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
-    onFilterChange(filters);
+    // Сохраняем фильтры в cookies
+    Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
+    onFilterChange(filters); // Передаем данные наружу
   };
 
   const {
@@ -107,44 +113,29 @@ export const FilterForm = ({
     setStartDate("");
     setEndDate("");
     setMemberCount("");
+    // После очистки фильтров удаляем их из cookies
+    Cookies.remove("filterData");
   };
 
-  // const handle = () => {
-  //   // Собираем данные формы
-  //   const formData = {
-  //     eventNames: multiSelectEventName,
-  //     sportTypes: multiSelectSportType,
-  //     disciplines: multiSelectValues3,
-  //     locations: multiSelectValues4,
-  //     programs: multiSelectValues5,
-  //     sex,
-  //     minAge,
-  //     maxAge,
-  //     date,
-  //     memberCount,
-  //   };
-
-  // 	Cookies.set("filterData", JSON.stringify(formData), { expires: 7 }); // сохраняем на 1 неделю
-  // }
-
+  // Загрузка фильтров из cookies при монтировании компонента
   useEffect(() => {
     const savedFilters = Cookies.get("filterData");
 
     if (savedFilters) {
       const parsedFilters = JSON.parse(savedFilters);
 
-      // Устанавливаем значения в состояния
-      setMultiSelectEventName(parsedFilters.eventNames || []);
-      setMultiSelectSportType(parsedFilters.sportTypes || []);
-      setMultiSelectValues3(parsedFilters.disciplines || []);
-      setMultiSelectValues4(parsedFilters.locations || []);
-      setMultiSelectValues5(parsedFilters.programs || []);
-      setSex(parsedFilters.sex || []);
-      setMinAge(parsedFilters.minAge || "");
-      setMaxAge(parsedFilters.maxAge || "");
+      // Устанавливаем значения в состояния, если они есть
+      setMultiSelectEventName(parsedFilters.sports ? parsedFilters.sports.split(",") : []);
+      setMultiSelectSportType(parsedFilters.sportTypes ? parsedFilters.sportTypes.split(",") : []);
+      setMultiSelectValues3(parsedFilters.categories ? parsedFilters.categories.split(",") : []);
+      setMultiSelectValues4(parsedFilters.cities ? parsedFilters.cities.split(",") : []);
+      setMultiSelectValues5(parsedFilters.competitions ? parsedFilters.competitions.split(",") : []);
+      setSex(parsedFilters.sex ? parsedFilters.sex.split(",") : []);
+      setMinAge(parsedFilters.min_age || "");
+      setMaxAge(parsedFilters.max_age || "");
       setStartDate(parsedFilters.start_date || "");
       setEndDate(parsedFilters.end_date || "");
-      setMemberCount(parsedFilters.memberCount || "");
+      setMemberCount(parsedFilters.member_count || "");
     }
   }, []);
 
@@ -176,25 +167,10 @@ export const FilterForm = ({
       )
     : [];
 
-  // // Функция для отображения введенных данных
-  // const handleSearch = () => {
-  //   console.log("Название мероприятия:", multiSelectEventName);
-  //   console.log("Вид спорта:", multiSelectSportType);
-  //   console.log("Дисциплина:", multiSelectValues3); // Дисциплина теперь массив или строка
-  //   console.log("Место проведения:", multiSelectValues4);
-  //   console.log("Программа:", multiSelectValues5); // Программа теперь массив или строка
-  //   console.log("Пол:", sex);
-  //   console.log("Дата начала:", startDate);
-  //   console.log("Дата окончания:", endDate);
-  //   console.log("Количество участников:", memberCount);
-  // };
-
   return (
     <div className={styles.filterForm}>
       <div className={styles.buttons}>
-        <h1 className={isFilterVisible ? "" : styles.hidden}>
-          ЗАПОЛНИТЕ ФОРМУ
-        </h1>
+        <h1 className={isFilterVisible ? "" : styles.hidden}>ЗАПОЛНИТЕ ФОРМУ</h1>
         <div>
           {isFilterVisible && (
             <button className={styles.clear} onClick={clearFilters}>
@@ -208,9 +184,7 @@ export const FilterForm = ({
       </div>
 
       <div
-        className={`${styles.inputs} ${
-          isFilterVisible ? styles.visible : styles.hidden
-        }`}
+        className={`${styles.inputs} ${isFilterVisible ? styles.visible : styles.hidden}`}
       >
         <MultiSelectDropdown
           label="Название мероприятия"
@@ -233,7 +207,7 @@ export const FilterForm = ({
         <MultiSelectDropdown
           label="Дисциплина"
           value={multiSelectValues3}
-          setValue={setMultiSelectValues3} // Привязка к состоянию дисциплины
+          setValue={setMultiSelectValues3}
           options={disciplineOptions}
           fetchMoreOptions={() => {}}
           hasNextPage={false}
@@ -251,7 +225,7 @@ export const FilterForm = ({
         <MultiSelectDropdown
           label="Программа"
           value={multiSelectValues5}
-          setValue={setMultiSelectValues5} // Привязка к состоянию программы
+          setValue={setMultiSelectValues5}
           options={programOptions}
           fetchMoreOptions={() => {}}
           hasNextPage={false}
