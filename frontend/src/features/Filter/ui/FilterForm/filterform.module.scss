@@ -152,24 +152,24 @@ h1.hidden {
 
 @media (max-width: 480px) {
   .buttons {
-    margin-top: 40px; /* Еще меньший отступ сверху */
+    margin-top: 40px;
   }
 
   .inputs_flex,
   .inputs_flex2 {
     flex-direction: column;
-    gap: 10px; /* Уменьшаем отступы */
+    gap: 10px;
   }
 
   .inputs {
-    gap: 15px; /* Уменьшаем отступы между элементами */
+    gap: 15px;
   }
 
   h1 {
-    font-size: 18px; /* Еще меньший размер шрифта */
+    font-size: 18px;
   }
 
   .search {
-    height: 45px; /* Меньший размер кнопки */
+    height: 45px;
   }
 }
