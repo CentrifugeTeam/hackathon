@@ -48,7 +48,7 @@ export const FilterForm = ({
       end_date: endDate || "2026-01-01",
     };
     onFilterChange(filters);
-		Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
+    Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
   };
 
   const {
@@ -109,7 +109,7 @@ export const FilterForm = ({
     setMemberCount("");
   };
 
-	// const handle = () => {
+  // const handle = () => {
   //   // Собираем данные формы
   //   const formData = {
   //     eventNames: multiSelectEventName,
@@ -124,10 +124,10 @@ export const FilterForm = ({
   //     memberCount,
   //   };
 
-	// 	Cookies.set("filterData", JSON.stringify(formData), { expires: 7 }); // сохраняем на 1 неделю
-	// }
+  // 	Cookies.set("filterData", JSON.stringify(formData), { expires: 7 }); // сохраняем на 1 неделю
+  // }
 
-	useEffect(() => {
+  useEffect(() => {
     const savedFilters = Cookies.get("filterData");
 
     if (savedFilters) {
@@ -143,7 +143,7 @@ export const FilterForm = ({
       setMinAge(parsedFilters.minAge || "");
       setMaxAge(parsedFilters.maxAge || "");
       setStartDate(parsedFilters.start_date || "");
-			setEndDate(parsedFilters.end_date || "");
+      setEndDate(parsedFilters.end_date || "");
       setMemberCount(parsedFilters.memberCount || "");
     }
   }, []);
@@ -290,7 +290,6 @@ export const FilterForm = ({
             setDate={setEndDate}
           />
         </div>
-        <button className={styles.search} onClick={handleSearch}>Поиск</button>
 
         <button className={styles.search} onClick={handleSearch}>
           Поиск
