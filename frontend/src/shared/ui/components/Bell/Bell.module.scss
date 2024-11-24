@@ -1,0 +1,19 @@
+.bell_block {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	transition: font-size 0.1s ease, transform 0.1s ease;
+	margin-right: 30px;
+	margin-left: 10px;
+}
+
+.menu{
+	background-color: white;
+}
+
+.notMenu{
+	background-color: #3169f2;
+}

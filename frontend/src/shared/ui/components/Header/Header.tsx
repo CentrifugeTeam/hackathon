@@ -1,7 +1,6 @@
 import { useState } from "react";
 import styles from "./header.module.scss";
-import Bell from "../../../../assets/proicons_bell.svg";
-import BellWhite from "../../../../assets/proicons_bellWhite.svg"
+import { Bell } from "../Bell";
 import CloseMobileMenu from "../../../../assets/closeMobileMenu.svg";
 import OpenedMobileMenu from "../../../../assets/openedMobileMenu.svg";
 import { Logo } from "../Logo";
@@ -32,16 +31,12 @@ export const Header = () => {
 						{isMobileMenuOpen ? (
 							<>
 								<img onClick={toggleMobileMenu} className={styles.mobileMenu} src={OpenedMobileMenu} alt="" />
-								<div className={styles.bell_block}>
-									<img src={BellWhite} alt="Уведомление" />
-								</div>
+								<Bell isMenu={true} />
 							</>
 						) : (
 							<>
 								<img onClick={toggleMobileMenu} className={styles.mobileMenu} src={CloseMobileMenu} alt="" />
-								<div className={styles.bell_block}>
-									<img src={Bell} alt="Уведомление" />
-								</div>
+								<Bell isMenu={false} />
 							</>
 						)}
           </div>

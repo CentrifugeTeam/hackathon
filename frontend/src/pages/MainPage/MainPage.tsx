@@ -13,7 +13,7 @@ const getCurrentDate = () => {
 };
 
 export const MainPage = () => {
-  const size = 21; // Количество элементов на странице
+  const size = 9; // Количество элементов на странице
   const [isMobile, setIsMobile] = useState(false);
 
   const [filters, setFilters] = useState({
@@ -27,7 +27,7 @@ export const MainPage = () => {
     participant_from: undefined,
     participant_to: undefined,
     participants_count: undefined,
-    start_date: getCurrentDate(), // Устанавливаем текущую дату
+    start_date: getCurrentDate(),
     end_date: undefined,
   });
 

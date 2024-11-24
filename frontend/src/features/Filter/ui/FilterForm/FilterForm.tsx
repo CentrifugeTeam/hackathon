@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEvents } from "../../api/eventName";
 import { useSportEvents } from "../../api/sportName";
 import { useLocationEvents } from "../../api/locationName";
@@ -10,6 +10,7 @@ import { ChooseMemberCount } from "../../../../shared/ui/components/ChooseMember
 import { ChooseDateInput } from "../../../../shared/ui/components/ChooseDateInput";
 import { useSexEvents } from "../../api/sexName";
 import { useCompetitionEvents } from "../../api/competitionName";
+import Cookies from "js-cookie";
 
 export const FilterForm = ({
   onFilterChange,
@@ -18,6 +19,7 @@ export const FilterForm = ({
 }) => {
   const [isFilterVisible, setFilterVisible] = useState(false);
 
+  // Состояния фильтров
   const [multiSelectEventName, setMultiSelectEventName] = useState<string[]>(
     []
   );
@@ -25,7 +27,7 @@ export const FilterForm = ({
     []
   );
   const [multiSelectValues3, setMultiSelectValues3] = useState<string[]>([]); // Дисциплина
-  const [multiSelectValues4, setMultiSelectValues4] = useState<string[]>([]);
+  const [multiSelectValues4, setMultiSelectValues4] = useState<string[]>([]); // Место проведения
   const [multiSelectValues5, setMultiSelectValues5] = useState<string[]>([]); // Программа
 
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -45,8 +47,28 @@ export const FilterForm = ({
       cities: multiSelectValues4.join(","),
       start_date: startDate || "2024-01-01",
       end_date: endDate || "2026-01-01",
+      sex: sex.join(","),
+      min_age: minAge,
+      max_age: maxAge,
+      member_count: memberCount,
     };
     onFilterChange(filters);
+
+    const formData = {
+      eventNames: multiSelectEventName,
+      sportTypes: multiSelectSportType,
+      disciplines: multiSelectValues3,
+      locations: multiSelectValues4,
+      programs: multiSelectValues5,
+      sex,
+      minAge,
+      maxAge,
+      startDate,
+      endDate,
+      memberCount,
+    };
+
+    Cookies.set("filterData", JSON.stringify(formData), { expires: 7 });
   };
 
   const {
@@ -105,7 +127,75 @@ export const FilterForm = ({
     setStartDate("");
     setEndDate("");
     setMemberCount("");
+    // После очистки фильтров удаляем их из cookies
+    Cookies.remove("filterData");
   };
+
+  // Загрузка фильтров из cookies при монтировании компонента
+  useEffect(() => {
+    const savedFilters = Cookies.get("filterData");
+
+    if (savedFilters) {
+      const parsedFilters = JSON.parse(savedFilters);
+
+      // Проверка и установка значений для разных фильтров
+      setMultiSelectEventName(
+        Array.isArray(parsedFilters.eventNames)
+          ? parsedFilters.eventNames
+          : parsedFilters.eventNames
+          ? parsedFilters.eventNames.split(",")
+          : []
+      );
+      setMultiSelectSportType(
+        Array.isArray(parsedFilters.sportTypes)
+          ? parsedFilters.sportTypes
+          : parsedFilters.sportTypes
+          ? parsedFilters.sportTypes.split(",")
+          : []
+      );
+      setMultiSelectValues3(
+        Array.isArray(parsedFilters.disciplines)
+          ? parsedFilters.disciplines
+          : parsedFilters.disciplines
+          ? parsedFilters.disciplines.split(",")
+          : []
+      );
+      setMultiSelectValues4(
+        Array.isArray(parsedFilters.locations)
+          ? parsedFilters.locations
+          : parsedFilters.locations
+          ? parsedFilters.locations.split(",")
+          : []
+      );
+      setMultiSelectValues5(
+        Array.isArray(parsedFilters.programs)
+          ? parsedFilters.programs
+          : parsedFilters.programs
+          ? parsedFilters.programs.split(",")
+          : []
+      );
+
+      // Для "sex" нужно дополнительно проверять тип данных
+      if (parsedFilters.sex) {
+        // Если "sex" уже строка, то разделяем её, если массив - сразу используем его
+        setSex(
+          typeof parsedFilters.sex === "string"
+            ? parsedFilters.sex.split(",")
+            : Array.isArray(parsedFilters.sex)
+            ? parsedFilters.sex
+            : [] // Если ни строка, ни массив, то пустой массив
+        );
+      } else {
+        setSex([]); // Если "sex" нет в cookies, устанавливаем пустой массив
+      }
+
+      setMinAge(parsedFilters.minAge || "");
+      setMaxAge(parsedFilters.maxAge || "");
+      setStartDate(parsedFilters.startDate || "");
+      setEndDate(parsedFilters.endDate || "");
+      setMemberCount(parsedFilters.memberCount || "");
+    }
+  }, []);
 
   const eventOptions = eventData
     ? eventData.pages.flatMap((page) => page.items.map((item) => item.name))
@@ -134,19 +224,6 @@ export const FilterForm = ({
         page.items.map((item) => item.name)
       )
     : [];
-
-  // // Функция для отображения введенных данных
-  // const handleSearch = () => {
-  //   console.log("Название мероприятия:", multiSelectEventName);
-  //   console.log("Вид спорта:", multiSelectSportType);
-  //   console.log("Дисциплина:", multiSelectValues3); // Дисциплина теперь массив или строка
-  //   console.log("Место проведения:", multiSelectValues4);
-  //   console.log("Программа:", multiSelectValues5); // Программа теперь массив или строка
-  //   console.log("Пол:", sex);
-  //   console.log("Дата начала:", startDate);
-  //   console.log("Дата окончания:", endDate);
-  //   console.log("Количество участников:", memberCount);
-  // };
 
   return (
     <div className={styles.filterForm}>
@@ -192,7 +269,7 @@ export const FilterForm = ({
         <MultiSelectDropdown
           label="Дисциплина"
           value={multiSelectValues3}
-          setValue={setMultiSelectValues3} // Привязка к состоянию дисциплины
+          setValue={setMultiSelectValues3}
           options={disciplineOptions}
           fetchMoreOptions={() => {}}
           hasNextPage={false}
@@ -210,7 +287,7 @@ export const FilterForm = ({
         <MultiSelectDropdown
           label="Программа"
           value={multiSelectValues5}
-          setValue={setMultiSelectValues5} // Привязка к состоянию программы
+          setValue={setMultiSelectValues5}
           options={programOptions}
           fetchMoreOptions={() => {}}
           hasNextPage={false}
@@ -249,6 +326,7 @@ export const FilterForm = ({
             setDate={setEndDate}
           />
         </div>
+
         <button className={styles.search} onClick={handleSearch}>
           Поиск
         </button>

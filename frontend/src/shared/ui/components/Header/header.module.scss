@@ -17,7 +17,8 @@
     .elements {
       display: flex;
       gap: 60px;
-      margin-left: 7%;
+			margin-left: 16px;
+			margin-right: 16px;
 
       .elem {
         font-family: "Evolventa", Arial, sans-serif;
@@ -37,23 +38,10 @@
       align-items: center;
 			z-index: 999999;
 
-      .bell_block {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background-color: #3169f2;
-        transition: font-size 0.1s ease, transform 0.1s ease;
-				margin-right: 30px;
-				margin-left: 10px;
-
-        img {
-          width: 24px;
-          height: 24px;
-        }
-      }
+			img {
+				width: 24px;
+				height: 24px;
+			}
     }
   }
 }
