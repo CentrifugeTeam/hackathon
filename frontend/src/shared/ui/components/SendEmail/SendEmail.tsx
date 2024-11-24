@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
 import styles from "./sendemail.module.scss";
 import Close from "../../../../assets/close.svg";
 import { MultiSelectDropdown } from "../MultiSelectDropdown";
 import { useSportEvents } from "../../../../features/Filter/api/sportName";
+import { registerEmail, EmailRegistrationData } from "./api/sendEmail";
 
 export const SendEmail = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -13,21 +15,38 @@ export const SendEmail = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<boolean>(false);
-  const [sportTypeError, setSportTypeError] = useState<boolean>(false);
+  const [sportError, setSportError] = useState<boolean>(false);
 
   const {
     data: sportEventData,
     isLoading: isLoadingSports,
     error: errorSports,
     fetchNextPage: fetchNextSportPage,
-    hasNextPage: hasNextSportPage,
   } = useSportEvents(1, 10, searchQuery);
 
   const sportEventOptions = sportEventData
     ? sportEventData.pages.flatMap((page) =>
-        page.items.map((item) => item.sport)
+        page.items.map((item) => ({
+          id: item.id,
+          sport: item.sport,
+        }))
       )
     : [];
+
+  const { mutateAsync, isPending: isMutating } = useMutation<
+    void,
+    Error,
+    EmailRegistrationData
+  >({
+    mutationFn: registerEmail,
+    onSuccess: () => {
+      setEmail("");
+      setMultiSelectSportType([]);
+    },
+    onError: (error: Error) => {
+      console.error("Error during registration:", error);
+    },
+  });
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -55,26 +74,36 @@ export const SendEmail = () => {
     setIsVisible(false);
   };
 
-  const handleSubmit = () => {
-    let valid = true;
+  const handleSubmit = async () => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-    if (email.trim() === "") {
+    if (email.trim() === "" || !emailRegex.test(email)) {
       setEmailError(true);
-      valid = false;
     } else {
       setEmailError(false);
     }
 
     if (multiSelectSportType.length === 0) {
-      setSportTypeError(true);
-      valid = false;
+      setSportError(true);
     } else {
-      setSportTypeError(false);
+      setSportError(false);
     }
 
-    if (valid) {
-      console.log("Email sent: ", email);
-      console.log("Selected sports: ", multiSelectSportType);
+    if (email.trim() !== "" && multiSelectSportType.length > 0 && emailRegex.test(email)) {
+      const selectedSportEventIds = sportEventOptions
+        .filter((sport) => multiSelectSportType.includes(sport.sport))
+        .map((sport) => sport.id);
+
+      const data: EmailRegistrationData = {
+        email,
+        event_types_id: selectedSportEventIds,
+      };
+
+      try {
+        await mutateAsync(data);
+      } catch (error) {
+        console.error("Error during registration:", error);
+      }
     }
   };
 
@@ -90,7 +119,7 @@ export const SendEmail = () => {
       </h1>
 
       <div className={styles.input_block}>
-        <label className={emailError ? styles.errorText : ""}>Введите ваш email</label>
+        <label className={emailError ? styles.errorText : ""}>{emailError ? "Введите ваш email правильно" : "Введите ваш email"}</label>
         <input
           type="email"
           placeholder="Email"
@@ -101,18 +130,21 @@ export const SendEmail = () => {
       </div>
 
       <MultiSelectDropdown
-        label="Вид спорта"
+        label="Выберите вид спорта"
         value={multiSelectSportType}
         setValue={setMultiSelectSportType}
-        options={sportEventOptions}
+        options={sportEventOptions.map((option) => option.sport)}
         fetchMoreOptions={fetchNextSportPage}
-        hasNextPage={!!hasNextSportPage}
         onSearch={setSearchQuery}
-				isEror={sportTypeError}
+        isEror={sportError}
       />
 
-      <button className={styles.show} onClick={handleSubmit}>
-        Отправить
+      <button
+        className={styles.show}
+        onClick={handleSubmit}
+        disabled={isMutating}
+      >
+        {isMutating ? "Отправка..." : "Отправить"}
       </button>
 
       {isLoadingSports && <p>Загрузка видов спорта...</p>}

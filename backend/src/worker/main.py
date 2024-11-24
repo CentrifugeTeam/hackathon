@@ -2,6 +2,7 @@ import asyncio
 from saq import CronJob, Queue
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from logging import getLogger, basicConfig, INFO, DEBUG
+
 from .settings import settings as conf_settings
 from .functions.cron_pdf import cron_update_calendar_table
 
@@ -22,6 +23,7 @@ async def startup(ctx):
     engine = create_async_engine(conf_settings.SQLALCHEMY_DATABASE_URL, echo=False)
     async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
     ctx["async_session_maker"] = async_session_maker
+
 
 
 async def shutdown(ctx):
