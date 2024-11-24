@@ -27,7 +27,7 @@ export const MainPage = () => {
     participant_from: undefined,
     participant_to: undefined,
     participants_count: undefined,
-    start_date: getCurrentDate(), // Устанавливаем текущую дату
+    start_date: getCurrentDate(),
     end_date: undefined,
   });
 
