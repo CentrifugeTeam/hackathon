@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: bb7959bad61a
+Revision ID: 988baba8e41a
 Revises: 
-Create Date: 2024-11-24 04:04:20.781456
+Create Date: 2024-11-24 05:15:11.192099
 
 """
 from typing import Sequence, Union
@@ -19,7 +19,7 @@ from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'bb7959bad61a'
+revision: str = '988baba8e41a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -38,7 +38,8 @@ def upgrade() -> None:
     sa.Column('region', sa.String(), nullable=True),
     sa.Column('country', sa.String(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('city', 'region', 'country', name='unique_city_region_country')
     )
     op.create_table('users',
     sa.Column('email', sa.String(), nullable=False),

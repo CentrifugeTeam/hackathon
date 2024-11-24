@@ -10,6 +10,7 @@ class Location(IDMixin, Base):
     region: Mapped[str] = mapped_column(String(), nullable=True)
     country: Mapped[str] = mapped_column(String())
     sports: Mapped[list['SportEvent']] = relationship(back_populates='location', cascade='delete')
+    __table_args__ = (UniqueConstraint('city', 'region', 'country', name='unique_city_region_country'),)
 
 
 class AgeGroup(IDMixin, Base):

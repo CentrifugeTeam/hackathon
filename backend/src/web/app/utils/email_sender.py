@@ -32,12 +32,13 @@ class SMTPMessage:
               <table role="presentation" cellspacing="0" cellpadding="0" width="100%" align="center" id="m_-7984133988146846855emailBodyContainer" style="border:0px;border-bottom:1px solid #d6d6d6;max-width:600px">
                   <tbody><tr>
                     <td style="background-color:#fff;color:#444;font-family:'Amazon Ember','Helvetica Neue',Roboto,Arial,sans-serif;font-size:14px;line-height:140%;padding:25px 35px">
+                    {text}
                     </td>
                   </tr>
               <tr>
                 <td style="background-color:#fff;color:#444;font-family:'Amazon Ember','Helvetica Neue',Roboto,Arial,sans-serif;font-size:14px;line-height:140%;padding:25px 35px;padding-top:0;text-align:center">
                   <div style="font-weight:bold;padding-bottom:15px"></div>
-                  <div style="color:#000;font-size:36px;font-weight:bold;padding-bottom:15px">{text}</div>
+                  <div style="color:#000;font-size:36px;font-weight:bold;padding-bottom:15px"></div>
                   <div style="color:#444;font-size:10px"></div>
                 </td>
               </tr>

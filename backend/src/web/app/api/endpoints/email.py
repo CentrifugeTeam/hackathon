@@ -21,9 +21,9 @@ async def email(settings: UserSettings,
         email = Email(email=settings.email)
         await users_manager.create(session, email, type_events=[settings.event_types_id], commit=False)
         try:
-            await smtp_message.asend_email(email.email, "Hello!")
+            await smtp_message.asend_email(email.email, "Вы подписались!")
         except Exception as e:
             await session.rollback()
-            logger.exception('exceptin in emailer ', exc_info=e)
+            logger.exception('exc in emailer ', exc_info=e)
             raise HTTPException(status_code=400)
         return Response(status_code=204)

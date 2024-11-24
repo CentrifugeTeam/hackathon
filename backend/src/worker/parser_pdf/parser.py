@@ -50,7 +50,7 @@ class EventSchema(BaseModel):
     start_date: date
     end_date: date
     category: str
-    count_people: int = Field(serialization_alias='participants_count')
+    count_people: int = Field(serialization_alias='participants_count', le=90000)
 
     @field_validator('start_date', 'end_date', mode='before')
     @classmethod
@@ -201,61 +201,40 @@ class ParserPDF:
     def _handle_after_date_block(self, gen: Generator,
                                  sport_block: Block,
                                  date_block: Block):
-        count_exec_gen = 2
-        try:
-
-            event_id = sport_block.text.pop(0)
-            sport_name = ''
-            for text in sport_block.text.copy():
-                if text.isupper():
-                    sport_block.text.remove(text)
-                    sport_name += ' ' + text
-                else:
-                    break
-
-            sport_name.strip(' ')
-
-            person_sex = ''
-            for text in sport_block.text.copy():
-                if text.isupper():
-                    break
-                else:
-                    sport_block.text.remove(text)
-                    person_sex += ' ' + text
-
-            person_sex = person_sex.strip()
-            sexes = list(self._convert_to_person_requirements(person_sex))
-            # sexes = []
-
-            # for sex in self._wrapped_parse(person_sex):
-            #     sexes.append(sex)
-
-            competitions = self._convert_to_programs_and_disciplines(" ".join(sport_block.text))
-            count_exec_gen = 1
-            location = self._create_location(gen)
-
-            count_exec_gen = 0
-            count_block = next(gen)
-            event = EventSchema(
-                category=self._current_category,
-                id=event_id, name=sport_name, start_date=date_block.text[0], end_date=date_block.text[1],
-                count_people=count_block.text[0]
-            )
-            event_type = EventTypeSchema(sport=self._current_sport)
-        except Exception as e:
-            for i in range(count_exec_gen):
-                next(gen)
-            raise e
+        event_id = sport_block.text[0]
+        event_name = sport_block.text[1]
+        if len(sport_block.text) < 3:
+            # logger.warning('sport block with text less then 3! %s', sport_block)
+            reqs = []
 
         else:
-            row = Row(
-                event_type=event_type,
-                location=location,
-                sexes=sexes,
-                event=event,
-                competitions=competitions,
-            )
-            return row
+            reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
+
+        if len(sport_block.text) > 5:
+            competitions = self._convert_to_programs_and_disciplines(" ".join(sport_block.text[2:]))
+        elif len(sport_block.text) < 3:
+            competitions = self._convert_to_programs_and_disciplines(sport_block.text[2])
+        else:
+            competitions = []
+
+        location = self._create_location(gen)
+
+        count_block = next(gen)
+        event = EventSchema(
+            category=self._current_category,
+            id=event_id, name=event_name, start_date=date_block.text[0], end_date=date_block.text[1],
+            count_people=count_block.text[0]
+        )
+        event_type = EventTypeSchema(sport=self._current_sport)
+
+        row = Row(
+            event_type=event_type,
+            location=location,
+            sexes=reqs,
+            event=event,
+            competitions=competitions,
+        )
+        return row
 
     def _parse_blocks(self, blocks: list[str]):
         first = blocks[0].strip(',. ')
