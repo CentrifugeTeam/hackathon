@@ -237,6 +237,34 @@ class ParserPDF:
         )
         return row
 
+    def _parse_blocks(self, blocks: list[str]):
+        people = [blocks[0]]
+        age = blocks[-1]
+        for block in blocks[1:-1]:
+            block = block.strip('., ')
+            if block == 'от':
+                pass
+            elif block == 'до':
+                pass
+            elif len(block) == 1 or block == 'старше':
+                continue
+            else:
+                people.append(block)
+
+        start, stop = age.split('-')
+        return [person for person in people]
+
+    def _wrapped_parse(self, text: str):
+        if text == '':
+            return
+        index = text.find('лет')
+        if index == -1:
+            return [name.strip('., ') for name in text.split(',') if name != '']
+        blocks = text[:index].strip(',. ').split(' ')
+        res = self._parse_blocks(blocks)
+        return self._wrapped_parse(text[index+3:])
+
+
     def _parse_rows(self, gen: Generator) -> Row:
         while True:
             try:
