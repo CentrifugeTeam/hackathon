@@ -13,6 +13,8 @@ export const SendEmail = () => {
     []
   );
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [email, setEmail] = useState<string>(""); // State for email input
+  const [emailError, setEmailError] = useState<boolean>(false); // State for email error
 
   const {
     data: sportEventData,
@@ -57,6 +59,17 @@ export const SendEmail = () => {
     setIsVisible(false); // Close the component
   };
 
+  // Handle email validation and submit
+  const handleSubmit = () => {
+    if (email.trim() === "") {
+      setEmailError(true); // Show error if email is empty
+    } else {
+      setEmailError(false); // Reset error if email is valid
+      // Здесь можно выполнить дальнейшую обработку данных (например, отправка формы)
+      console.log("Email sent: ", email);
+    }
+  };
+
   if (!isVisible) return null; // If the block is not visible, return null to unmount it
 
   return (
@@ -70,8 +83,18 @@ export const SendEmail = () => {
 
       <div className={styles.input_block}>
         <label>Введите ваш email</label>
-        <input type="text" placeholder="Email" />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)} // Update email state
+          className={`${emailError ? styles.errorInput : ""} ${styles.emailInput}`} // Add error class if email is empty
+        />
+        {emailError && (
+          <p className={styles.errorText}>Пожалуйста, введите email</p>
+        )}
       </div>
+
       <MultiSelectDropdown
         label="Вид спорта"
         value={multiSelectSportType}
@@ -81,7 +104,11 @@ export const SendEmail = () => {
         hasNextPage={!!hasNextSportPage}
         onSearch={setSearchQuery}
       />
-      <button className={styles.show}>Отправить</button>
+
+      <button className={styles.show} onClick={handleSubmit}>
+        Отправить
+      </button>
+
       {isLoadingSports && <p>Загрузка видов спорта...</p>}
       {errorSports && <p>Произошла ошибка при загрузке данных видов спорта.</p>}
     </div>

@@ -2,6 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import api from "../../../shared/api/base";
 
 export interface ISportEvent {
+  id: number;
   sport: string;
 }
 
@@ -30,6 +31,7 @@ export const fetchSportEvents = async (
 
   return {
     items: response.data.items.map((item: any) => ({
+      id: item.id, // Add the `id` field here
       sport: item.sport,
     })),
     total: response.data.total,

@@ -5,7 +5,7 @@
   transform: translate(-50%, -50%); // Сдвиг для точного центрирования
   width: 700px;
   height: 532px;
-  background-color: #cddbfb;
+  background-color: #ffffff;
   border-radius: 25px;
   border: 2px solid #3169f2;
   display: flex;
@@ -43,7 +43,7 @@
       margin-top: 18px;
       height: 65px;
       all: none;
-      border: none;
+      border: 1px solid rgba(128, 128, 128, 0.589);
       border-radius: 15px;
       padding-left: 32px;
       padding-right: 32px;
@@ -71,4 +71,15 @@
     background: #3169f2;
     color: white;
   }
+}
+
+.errorInput {
+  border: 2px solid red !important;
+}
+
+.errorText {
+  color: red;
+  font-size: 12px;
+	margin-left: 14px;
+  margin-top: -17px;
 }
