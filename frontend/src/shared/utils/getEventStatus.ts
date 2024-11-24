@@ -1,61 +1,46 @@
 export const getEventStatus = (start_date: string, end_date: string) => {
   const today = new Date();
-  const startDateOnly = new Date(start_date);
-  startDateOnly.setHours(0, 0, 0, 0);
 
-  const endDateOnly = new Date(end_date);
-  endDateOnly.setHours(0, 0, 0, 0);
+  const startDate = new Date(start_date);
+  const endDate = new Date(end_date);
 
-  const todayOnly = new Date();
-  todayOnly.setHours(0, 0, 0, 0);
+  // Сбрасываем время для чистоты расчетов
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
 
-  const tomorrow = new Date(todayOnly.getTime() + 24 * 60 * 60 * 1000);
+  // Проверяем разницу в днях
+  const timeDiff = startDate.getTime() - today.getTime();
+  const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
 
+  // Начальные значения
   let status = "НЕ В СРОК";
   let statusColor = "#969696";
 
-  if (tomorrow.toDateString() === startDateOnly.toDateString()) {
+  // Проверка на статус "ЗАВТРА"
+  if (daysDiff === 1) {
     status = "ЗАВТРА";
     statusColor = "#3169F2";
-  } else if (todayOnly >= startDateOnly && todayOnly <= endDateOnly) {
-    status = "АКТИВНО ИДЕТ";
-    statusColor = "#3169F2";
-  } else if (
-    startDateOnly > todayOnly &&
-    startDateOnly <= new Date(todayOnly.getTime() + 6 * 24 * 60 * 60 * 1000)
-  ) {
+  }
+  // Проверка на статус "НА ЭТОЙ НЕДЕЛЕ" (в пределах 7 дней)
+  else if (daysDiff > 1 && daysDiff <= 7) {
     status = "НА ЭТОЙ НЕДЕЛЕ";
     statusColor = "#c8ff00a9";
-  } else if (
-    startDateOnly > todayOnly &&
-    startDateOnly <= new Date(todayOnly.getTime() + 30 * 24 * 60 * 60 * 1000)
-  ) {
+  }
+  // Проверка на статус "В ЭТОМ МЕСЯЦЕ" (в пределах 30 дней)
+  else if (daysDiff > 7 && daysDiff <= 30) {
     status = "В ЭТОМ МЕСЯЦЕ";
     statusColor = "#c8ff00a9";
-  } else if (status === "НЕ В СРОК") {
-    const currentQuarter = Math.floor(today.getMonth() / 3);
-    const startQuarter = Math.floor(startDateOnly.getMonth() / 3);
-    const endQuarter = Math.floor(endDateOnly.getMonth() / 3);
-
-    if (
-      startDateOnly.getFullYear() === today.getFullYear() &&
-      (startQuarter === currentQuarter || endQuarter === currentQuarter)
-    ) {
-      status = "В КВАРТАЛЕ";
-      statusColor = "#969696";
-    }
-
-    const currentHalfYear = today.getMonth() < 6 ? 0 : 1;
-    const startHalfYear = startDateOnly.getMonth() < 6 ? 0 : 1;
-    const endHalfYear = endDateOnly.getMonth() < 6 ? 0 : 1;
-
-    if (
-      startDateOnly.getFullYear() === today.getFullYear() &&
-      (startHalfYear === currentHalfYear || endHalfYear === currentHalfYear)
-    ) {
-      status = "В ПОЛУГОДИИ";
-      statusColor = "#969696";
-    }
+  }
+  // Проверка на статус "В КВАРТАЛЕ" (в пределах текущего квартала)
+  else if (daysDiff > 30 && daysDiff <= 90) {
+    status = "В КВАРТАЛЕ";
+    statusColor = "#969696";
+  }
+  // Проверка на статус "В ПОЛУГОДИИ" (в пределах 6 месяцев)
+  else if (daysDiff > 90 && daysDiff <= 180) {
+    status = "В ПОЛУГОДИИ";
+    statusColor = "#969696";
   }
 
   return { status, statusColor };
