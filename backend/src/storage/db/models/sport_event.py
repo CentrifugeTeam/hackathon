@@ -25,6 +25,7 @@ class EventType(IDMixin, Base):
     __tablename__ = 'event_types'
     sport: Mapped[str] = mapped_column(String(length=250), nullable=False, unique=True)
     sports: Mapped[list['SportEvent']] = relationship(back_populates='type_event', cascade='delete')
+    users: Mapped[list['Users']] = relationship(back_populates='type_events', secondary='user_settings')
 
 
 class Competition(IDMixin, Base):
@@ -54,6 +55,5 @@ class SportEvent(Base):
     location: Mapped[Location] = relationship(back_populates='sports', cascade='delete')
     age_groups: Mapped[list[AgeGroup]] = relationship(back_populates='sport', cascade='delete')
     competitions: Mapped[list[Competition]] = relationship(back_populates='sport', cascade='delete')
-    users: Mapped[list['Users']] = relationship(back_populates='events', secondary='user_settings')
 
 # TODO: воркер работает не корректно с age

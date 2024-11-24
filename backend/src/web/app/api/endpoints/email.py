@@ -19,7 +19,7 @@ async def email(settings: UserSettings,
                 ):
     async with session.begin():
         email = Email(email=settings.email)
-        await users_manager.create(session, email, events=[settings.event_types_id], commit=False)
+        await users_manager.create(session, email, type_events=[settings.event_types_id], commit=False)
         try:
             await smtp_message.asend_email(email.email, "Hello!")
         except Exception as e:
