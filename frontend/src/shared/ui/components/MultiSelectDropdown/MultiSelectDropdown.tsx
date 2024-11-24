@@ -10,6 +10,7 @@ interface MultiSelectDropdownProps {
   fetchMoreOptions?: () => void;
   hasNextPage?: boolean;
   onSearch?: (query: string) => void;
+	isEror?: boolean;
 }
 
 export const MultiSelectDropdown = ({
@@ -20,7 +21,9 @@ export const MultiSelectDropdown = ({
   fetchMoreOptions = () => {},
   hasNextPage = false,
   onSearch = () => {},
+	isEror = false
 }: MultiSelectDropdownProps) => {
+	console.log(isEror)
   const [isOpen, setIsOpen] = useState(false);
   const [localValue, setLocalValue] = useState<string[]>(value);
   const [searchQuery, setSearchQuery] = useState("");
@@ -138,7 +141,7 @@ export const MultiSelectDropdown = ({
 
   return (
     <div className={styles.dropdown} ref={dropdownRef}>
-      <label className={styles.label}>{label}</label>
+      <label className={`${styles.label} ${isEror ? styles.textError : ''}`}>{label}</label>
       <div className={styles.select} onClick={toggleDropdown}>
         {isEditing ? (
           <input
@@ -146,7 +149,7 @@ export const MultiSelectDropdown = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Поиск..."
-            className={styles.searchInput}
+            className={`${styles.searchInput} ${isEror ? styles.inputError : ''}`}
             onBlur={() => setIsEditing(false)}
             autoFocus
           />

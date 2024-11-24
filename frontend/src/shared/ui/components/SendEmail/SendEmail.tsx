@@ -5,16 +5,15 @@ import { MultiSelectDropdown } from "../MultiSelectDropdown";
 import { useSportEvents } from "../../../../features/Filter/api/sportName";
 
 export const SendEmail = () => {
-  const [isVisible, setIsVisible] = useState(true); // State to control visibility
-  const blockRef = useRef<HTMLDivElement>(null); // Reference to the block
-  const closeButtonRef = useRef<HTMLImageElement>(null); // Reference to the close button
+  const [isVisible, setIsVisible] = useState(true);
+  const blockRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLImageElement>(null);
 
-  const [multiSelectSportType, setMultiSelectSportType] = useState<string[]>(
-    []
-  );
+  const [multiSelectSportType, setMultiSelectSportType] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [email, setEmail] = useState<string>(""); // State for email input
-  const [emailError, setEmailError] = useState<boolean>(false); // State for email error
+  const [email, setEmail] = useState<string>("");
+  const [emailError, setEmailError] = useState<boolean>(false);
+  const [sportTypeError, setSportTypeError] = useState<boolean>(false);
 
   const {
     data: sportEventData,
@@ -22,7 +21,7 @@ export const SendEmail = () => {
     error: errorSports,
     fetchNextPage: fetchNextSportPage,
     hasNextPage: hasNextSportPage,
-  } = useSportEvents(1, 10, searchQuery); // Fetch sport event options
+  } = useSportEvents(1, 10, searchQuery);
 
   const sportEventOptions = sportEventData
     ? sportEventData.pages.flatMap((page) =>
@@ -30,18 +29,16 @@ export const SendEmail = () => {
       )
     : [];
 
-  // Handle closing the block when clicking outside
   const handleClickOutside = (event: MouseEvent) => {
     if (
       blockRef.current &&
-      !blockRef.current.contains(event.target as Node) && // Check if click is outside the block
-      !closeButtonRef.current?.contains(event.target as Node) // Also check if click is not on the close button
+      !blockRef.current.contains(event.target as Node) &&
+      !closeButtonRef.current?.contains(event.target as Node)
     ) {
-      setIsVisible(false); // Close the component
+      setIsVisible(false);
     }
   };
 
-  // Add event listener when component mounts, remove it on unmount
   useEffect(() => {
     if (isVisible) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -54,23 +51,34 @@ export const SendEmail = () => {
     };
   }, [isVisible]);
 
-  // Close the component when close button is clicked
   const handleClose = () => {
-    setIsVisible(false); // Close the component
+    setIsVisible(false);
   };
 
-  // Handle email validation and submit
   const handleSubmit = () => {
+    let valid = true;
+
     if (email.trim() === "") {
-      setEmailError(true); // Show error if email is empty
+      setEmailError(true);
+      valid = false;
     } else {
-      setEmailError(false); // Reset error if email is valid
-      // Здесь можно выполнить дальнейшую обработку данных (например, отправка формы)
+      setEmailError(false);
+    }
+
+    if (multiSelectSportType.length === 0) {
+      setSportTypeError(true);
+      valid = false;
+    } else {
+      setSportTypeError(false);
+    }
+
+    if (valid) {
       console.log("Email sent: ", email);
+      console.log("Selected sports: ", multiSelectSportType);
     }
   };
 
-  if (!isVisible) return null; // If the block is not visible, return null to unmount it
+  if (!isVisible) return null;
 
   return (
     <div className={styles.block} ref={blockRef}>
@@ -82,17 +90,14 @@ export const SendEmail = () => {
       </h1>
 
       <div className={styles.input_block}>
-        <label>Введите ваш email</label>
+        <label className={emailError ? styles.errorText : ""}>Введите ваш email</label>
         <input
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)} // Update email state
-          className={`${emailError ? styles.errorInput : ""} ${styles.emailInput}`} // Add error class if email is empty
+          onChange={(e) => setEmail(e.target.value)}
+          className={`${emailError ? styles.errorInput : ""} ${styles.emailInput}`}
         />
-        {emailError && (
-          <p className={styles.errorText}>Пожалуйста, введите email</p>
-        )}
       </div>
 
       <MultiSelectDropdown
@@ -103,6 +108,7 @@ export const SendEmail = () => {
         fetchMoreOptions={fetchNextSportPage}
         hasNextPage={!!hasNextSportPage}
         onSearch={setSearchQuery}
+				isEror={sportTypeError}
       />
 
       <button className={styles.show} onClick={handleSubmit}>

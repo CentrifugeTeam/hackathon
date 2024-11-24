@@ -5,7 +5,7 @@ import { useLocationEvents } from "../../api/locationName";
 import { MultiSelectDropdown } from "../../../../shared/ui/components/MultiSelectDropdown";
 import styles from "./filterform.module.scss";
 import { ChooseSexDropdown } from "../../../../shared/ui/components/ChooseSexDropdown";
-import { ChooseAgeInput } from "../../../../shared/ui/components/ChooseAgeInput";
+// import { ChooseAgeInput } from "../../../../shared/ui/components/ChooseAgeInput";
 import { ChooseMemberCount } from "../../../../shared/ui/components/ChooseMemberCount";
 import { ChooseDateInput } from "../../../../shared/ui/components/ChooseDateInput";
 import { useSexEvents } from "../../api/sexName";
@@ -302,12 +302,12 @@ export const FilterForm = ({
             options={sexOptions}
             onSearch={setSexQuery}
           />
-          <ChooseAgeInput
+          {/* <ChooseAgeInput
             minAge={minAge}
             setMinAge={setMinAge}
             maxAge={maxAge}
             setMaxAge={setMaxAge}
-          />
+          /> */}
         </div>
 
         <ChooseMemberCount
