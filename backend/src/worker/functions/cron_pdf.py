@@ -8,14 +8,10 @@ from bs4 import BeautifulSoup
 import json
 import datetime
 from logging import getLogger
-from concurrent.futures import ProcessPoolExecutor
 import aiohttp
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from sqlalchemy import select
 from ..parser_pdf.parser import ParserPDF
-from storage.db.models import FilePDF, File
 from ..utils import update_db
-from tempfile import NamedTemporaryFile, TemporaryFile
 
 logger = getLogger(__name__)
 

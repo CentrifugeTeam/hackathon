@@ -15,7 +15,7 @@ r = APIRouter()
 async def email(settings: UserSettings,
                 session=Depends(get_session)
                 ):
-    email = Email(settings.email)
+    email = Email(email=settings.email)
     await users_manager.create(session, email, events=[settings.event_types_id])
     try:
         await smtp_message.asend_email(email.email, "Hello!")
