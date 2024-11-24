@@ -52,9 +52,8 @@ export const FilterForm = ({
       max_age: maxAge,
       member_count: memberCount,
     };
-    // Сохраняем фильтры в cookies
-    Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
-    onFilterChange(filters); // Передаем данные наружу
+		Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
+    onFilterChange(filters);
   };
 
   const {
