@@ -52,8 +52,23 @@ export const FilterForm = ({
       max_age: maxAge,
       member_count: memberCount,
     };
-		Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
     onFilterChange(filters);
+
+		const formData = {
+      eventNames: multiSelectEventName,
+      sportTypes: multiSelectSportType,
+      disciplines: multiSelectValues3,
+      locations: multiSelectValues4,
+      programs: multiSelectValues5,
+      sex,
+      minAge,
+      maxAge,
+      startDate,
+			endDate,
+      memberCount,
+    };
+
+		Cookies.set("filterData", JSON.stringify(formData), { expires: 7 });
   };
 
   const {
@@ -118,25 +133,60 @@ export const FilterForm = ({
 
   // Загрузка фильтров из cookies при монтировании компонента
   useEffect(() => {
-    const savedFilters = Cookies.get("filterData");
+		const savedFilters = Cookies.get("filterData");
 
-    if (savedFilters) {
-      const parsedFilters = JSON.parse(savedFilters);
+		if (savedFilters) {
+			const parsedFilters = JSON.parse(savedFilters);
 
-      // Устанавливаем значения в состояния, если они есть
-      setMultiSelectEventName(parsedFilters.sports ? parsedFilters.sports.split(",") : []);
-      setMultiSelectSportType(parsedFilters.sportTypes ? parsedFilters.sportTypes.split(",") : []);
-      setMultiSelectValues3(parsedFilters.categories ? parsedFilters.categories.split(",") : []);
-      setMultiSelectValues4(parsedFilters.cities ? parsedFilters.cities.split(",") : []);
-      setMultiSelectValues5(parsedFilters.competitions ? parsedFilters.competitions.split(",") : []);
-      setSex(parsedFilters.sex ? parsedFilters.sex.split(",") : []);
-      setMinAge(parsedFilters.min_age || "");
-      setMaxAge(parsedFilters.max_age || "");
-      setStartDate(parsedFilters.start_date || "");
-      setEndDate(parsedFilters.end_date || "");
-      setMemberCount(parsedFilters.member_count || "");
-    }
-  }, []);
+			// Проверка и установка значений для разных фильтров
+			setMultiSelectEventName(
+				Array.isArray(parsedFilters.eventNames)
+					? parsedFilters.eventNames
+					: parsedFilters.eventNames ? parsedFilters.eventNames.split(",") : []
+			);
+			setMultiSelectSportType(
+				Array.isArray(parsedFilters.sportTypes)
+					? parsedFilters.sportTypes
+					: parsedFilters.sportTypes ? parsedFilters.sportTypes.split(",") : []
+			);
+			setMultiSelectValues3(
+				Array.isArray(parsedFilters.disciplines)
+					? parsedFilters.disciplines
+					: parsedFilters.disciplines ? parsedFilters.disciplines.split(",") : []
+			);
+			setMultiSelectValues4(
+				Array.isArray(parsedFilters.locations)
+					? parsedFilters.locations
+					: parsedFilters.locations ? parsedFilters.locations.split(",") : []
+			);
+			setMultiSelectValues5(
+				Array.isArray(parsedFilters.programs)
+					? parsedFilters.programs
+					: parsedFilters.programs ? parsedFilters.programs.split(",") : []
+			);
+
+			// Для "sex" нужно дополнительно проверять тип данных
+			if (parsedFilters.sex) {
+				// Если "sex" уже строка, то разделяем её, если массив - сразу используем его
+				setSex(
+					typeof parsedFilters.sex === "string"
+						? parsedFilters.sex.split(",")
+						: Array.isArray(parsedFilters.sex)
+						? parsedFilters.sex
+						: [] // Если ни строка, ни массив, то пустой массив
+				);
+			} else {
+				setSex([]); // Если "sex" нет в cookies, устанавливаем пустой массив
+			}
+
+			setMinAge(parsedFilters.minAge || "");
+			setMaxAge(parsedFilters.maxAge || "");
+			setStartDate(parsedFilters.startDate || "");
+			setEndDate(parsedFilters.endDate || "");
+			setMemberCount(parsedFilters.memberCount || "");
+		}
+	}, []);
+
 
   const eventOptions = eventData
     ? eventData.pages.flatMap((page) => page.items.map((item) => item.name))
