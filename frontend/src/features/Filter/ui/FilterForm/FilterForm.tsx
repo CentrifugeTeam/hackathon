@@ -47,7 +47,7 @@ export const FilterForm = ({
       start_date: startDate || "2024-01-01",
       end_date: endDate || "2026-01-01",
     };
-		Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
+    Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
     onFilterChange(filters);
   };
 
