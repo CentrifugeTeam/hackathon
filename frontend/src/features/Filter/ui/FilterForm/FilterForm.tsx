@@ -12,6 +12,22 @@ import { useSexEvents } from "../../api/sexName";
 import { useCompetitionEvents } from "../../api/competitionName";
 import Cookies from "js-cookie";
 
+const calculateEndDate = (sortPeriod: string): string => {
+	const currentDate = new Date();
+	let calculatedEndDate = new Date(currentDate);
+
+	// Изменение месяца в зависимости от выбранного периода
+	if (sortPeriod === "1") {
+		calculatedEndDate.setMonth(currentDate.getMonth() + 1); // 1 месяц
+	} else if (sortPeriod === "3") {
+		calculatedEndDate.setMonth(currentDate.getMonth() + 3); // 3 месяца
+	} else if (sortPeriod === "6") {
+		calculatedEndDate.setMonth(currentDate.getMonth() + 6); // 6 месяцев
+	}
+
+	return calculatedEndDate.toISOString().split("T")[0]; // Возвращаем дату в формате YYYY-MM-DD
+};
+
 export const FilterForm = ({
   onFilterChange,
 }: {
@@ -41,24 +57,16 @@ export const FilterForm = ({
   const [sortPeriod, setSortPeriod] = useState<string>(""); // Значение по умолчанию - 1 месяц
 
   const handleSearch = () => {
-    const currentDate = new Date();
-    let calculatedEndDate = new Date(currentDate);
+		const endDateCalculated = calculateEndDate(sortPeriod);
 
-    if (sortPeriod === "1") {
-      calculatedEndDate.setMonth(currentDate.getMonth() + 1);
-    } else if (sortPeriod === "3") {
-      calculatedEndDate.setMonth(currentDate.getMonth() + 3);
-    } else if (sortPeriod === "6") {
-      calculatedEndDate.setMonth(currentDate.getMonth() + 6);
-    }
 
     const filters = {
       sports: multiSelectSportType.join(","),
       competitions: multiSelectValues5.join(","),
       categories: multiSelectValues3.join(","),
       cities: multiSelectValues4.join(","),
-      start_date: startDate || currentDate.toISOString().split("T")[0],
-      end_date: endDate || calculatedEndDate.toISOString().split("T")[0],
+      start_date: startDate || new Date().toISOString().split("T")[0],
+      end_date: endDateCalculated,
       sex: sex.join(","),
       min_age: minAge,
       max_age: maxAge,
@@ -77,9 +85,9 @@ export const FilterForm = ({
       minAge,
       maxAge,
       startDate,
-      endDate: calculatedEndDate.toISOString().split("T")[0],
+      endDate: endDateCalculated,
       memberCount,
-      sortPeriod, // сохраняем выбранный период
+      sortPeriod,
     };
 
     Cookies.set("filterData", JSON.stringify(formData), { expires: 7 });
@@ -208,6 +216,11 @@ export const FilterForm = ({
       setStartDate(parsedFilters.startDate || "");
       setEndDate(parsedFilters.endDate || "");
       setMemberCount(parsedFilters.memberCount || "");
+			setSortPeriod(parsedFilters.sortPeriod || "");
+
+			const calculatedEndDate = parsedFilters.endDate || calculateEndDate(parsedFilters.sortPeriod || "");
+			setStartDate(parsedFilters.startDate || new Date().toISOString().split("T")[0]);
+      setEndDate(calculatedEndDate);
     }
   }, []);
 
