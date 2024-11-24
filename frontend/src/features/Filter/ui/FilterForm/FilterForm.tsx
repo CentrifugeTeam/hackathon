@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEvents } from "../../api/eventName";
 import { useSportEvents } from "../../api/sportName";
 import { useLocationEvents } from "../../api/locationName";
@@ -10,6 +10,7 @@ import { ChooseMemberCount } from "../../../../shared/ui/components/ChooseMember
 import { ChooseDateInput } from "../../../../shared/ui/components/ChooseDateInput";
 import { useSexEvents } from "../../api/sexName";
 import { useCompetitionEvents } from "../../api/competitionName";
+import Cookies from "js-cookie";
 
 export const FilterForm = ({
   onFilterChange,
@@ -106,6 +107,46 @@ export const FilterForm = ({
     setEndDate("");
     setMemberCount("");
   };
+
+	const handleSearch = () => {
+    // Собираем данные формы
+    const formData = {
+      eventNames: multiSelectEventName,
+      sportTypes: multiSelectSportType,
+      disciplines: multiSelectValues3,
+      locations: multiSelectValues4,
+      programs: multiSelectValues5,
+      sex,
+      minAge,
+      maxAge,
+      date,
+      memberCount,
+    };
+
+		Cookies.set("filterData", JSON.stringify(formData), { expires: 7 }); // сохраняем на 1 неделю
+
+		console.log("Данные поиска:", formData);
+	}
+
+	useEffect(() => {
+    const savedFilters = Cookies.get("filterData");
+
+    if (savedFilters) {
+      const parsedFilters = JSON.parse(savedFilters);
+
+      // Устанавливаем значения в состояния
+      setMultiSelectEventName(parsedFilters.eventNames || []);
+      setMultiSelectSportType(parsedFilters.sportTypes || []);
+      setMultiSelectValues3(parsedFilters.disciplines || []);
+      setMultiSelectValues4(parsedFilters.locations || []);
+      setMultiSelectValues5(parsedFilters.programs || []);
+      setSex(parsedFilters.sex || []);
+      setMinAge(parsedFilters.minAge || "");
+      setMaxAge(parsedFilters.maxAge || "");
+      setDate(parsedFilters.date || "");
+      setMemberCount(parsedFilters.memberCount || "");
+    }
+  }, []);
 
   const eventOptions = eventData
     ? eventData.pages.flatMap((page) => page.items.map((item) => item.name))
@@ -249,6 +290,8 @@ export const FilterForm = ({
             setDate={setEndDate}
           />
         </div>
+        <button className={styles.search} onClick={handleSearch}>Поиск</button>
+
         <button className={styles.search} onClick={handleSearch}>
           Поиск
         </button>
