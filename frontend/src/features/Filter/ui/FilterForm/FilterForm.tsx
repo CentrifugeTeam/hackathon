@@ -48,6 +48,7 @@ export const FilterForm = ({
       end_date: endDate || "2026-01-01",
     };
     onFilterChange(filters);
+		Cookies.set("filterData", JSON.stringify(filters), { expires: 7 });
   };
 
   const {
@@ -108,25 +109,23 @@ export const FilterForm = ({
     setMemberCount("");
   };
 
-	const handleSearch = () => {
-    // Собираем данные формы
-    const formData = {
-      eventNames: multiSelectEventName,
-      sportTypes: multiSelectSportType,
-      disciplines: multiSelectValues3,
-      locations: multiSelectValues4,
-      programs: multiSelectValues5,
-      sex,
-      minAge,
-      maxAge,
-      date,
-      memberCount,
-    };
+	// const handle = () => {
+  //   // Собираем данные формы
+  //   const formData = {
+  //     eventNames: multiSelectEventName,
+  //     sportTypes: multiSelectSportType,
+  //     disciplines: multiSelectValues3,
+  //     locations: multiSelectValues4,
+  //     programs: multiSelectValues5,
+  //     sex,
+  //     minAge,
+  //     maxAge,
+  //     date,
+  //     memberCount,
+  //   };
 
-		Cookies.set("filterData", JSON.stringify(formData), { expires: 7 }); // сохраняем на 1 неделю
-
-		console.log("Данные поиска:", formData);
-	}
+	// 	Cookies.set("filterData", JSON.stringify(formData), { expires: 7 }); // сохраняем на 1 неделю
+	// }
 
 	useEffect(() => {
     const savedFilters = Cookies.get("filterData");
@@ -143,7 +142,8 @@ export const FilterForm = ({
       setSex(parsedFilters.sex || []);
       setMinAge(parsedFilters.minAge || "");
       setMaxAge(parsedFilters.maxAge || "");
-      setDate(parsedFilters.date || "");
+      setStartDate(parsedFilters.start_date || "");
+			setEndDate(parsedFilters.end_date || "");
       setMemberCount(parsedFilters.memberCount || "");
     }
   }, []);
