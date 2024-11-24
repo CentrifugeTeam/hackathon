@@ -36,6 +36,9 @@ class SMTPMessage:
                   </tr>
               <tr>
                 <td style="background-color:#fff;color:#444;font-family:'Amazon Ember','Helvetica Neue',Roboto,Arial,sans-serif;font-size:14px;line-height:140%;padding:25px 35px;padding-top:0;text-align:center">
+                  <div style="font-weight:bold;padding-bottom:15px"></div>
+                  <div style="color:#000;font-size:36px;font-weight:bold;padding-bottom:15px">{text}</div>
+                  <div style="color:#444;font-size:10px"></div>
                 </td>
               </tr>
               </tbody>

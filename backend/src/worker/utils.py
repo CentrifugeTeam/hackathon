@@ -5,9 +5,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from typing import Generic, TypeVar
 
+from web.app.utils.email_sender import SMTPMessage
 from .parser_pdf.parser import Row
-from storage.db.models import EventType, SportEvent, AgeGroup, Location, Competition
+from .settings import settings as conf_settings
+
+from storage.db.models import EventType, SportEvent, AgeGroup, Location, Competition, Users
 from logging import getLogger
+
+smtp_message = SMTPMessage(sender=conf_settings.SMTP_SENDER, host=conf_settings.SMTP_HOST,
+                           port=conf_settings.SMTP_PORT,
+                           password=conf_settings.SMTP_PASSWORD)
 
 logger = getLogger(__name__)
 
@@ -69,8 +76,18 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
 
         # Сохраняем дисциплины (Competition)
         for competition in row.competitions:
-            await _create_if_dont_exist(session, {**competition.model_dump(by_alias=True), 'event_id': event.id},
-                                        Competition)
+            stmt = select(Competition).where(Competition.name == competition.name).where(
+                Competition.type == competition.type)
+            obj = await session.scalar(stmt)
+            if obj is None:
+                await _create_model(session, {**row.model_dump(by_alias=True), 'event_id': event.id}, Competition)
+
+        users: list[Users] = await event.awaitable_attrs.users
+        for user in users:
+            await smtp_message.asend_email(user.email,
+                                           f"Новое мероприятие по вашему любимому типу спорта!"
+                                           f"Название: {event.name}, Тип спорта:{event_type.name}, Начало: {event.start_date}"
+                                           )
 
     except SQLAlchemyError as e:
         logger.exception("Mistake in row %s", row, exc_info=e)
