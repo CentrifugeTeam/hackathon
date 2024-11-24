@@ -94,7 +94,6 @@ class ParserPDF:
         result = []
         for row in self._start_parse_pdf(gen):
             result.append(row)
-        # сохраняем данные
 
         for page in pdf[1:]:
             page: Page
@@ -268,7 +267,6 @@ class ParserPDF:
             people = [first]
 
         age = blocks[-1]
-        logger.info('blocks %s, %s', first, age)
         for block in blocks[1:-1]:
             block = block.strip('., ')
             if block == 'от':

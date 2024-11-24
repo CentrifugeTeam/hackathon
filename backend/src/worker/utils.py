@@ -82,7 +82,7 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
             if obj is None:
                 await _create_model(session, {**row.model_dump(by_alias=True), 'event_id': event.id}, Competition)
 
-        users: list[Users] = await event.awaitable_attrs.users
+        users: list[Users] = await event_type.awaitable_attrs.users
         for user in users:
             await smtp_message.asend_email(user.email,
                                            f"Новое мероприятие по вашему любимому типу спорта!"
