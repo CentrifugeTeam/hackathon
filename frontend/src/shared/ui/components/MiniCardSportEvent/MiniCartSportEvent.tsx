@@ -32,31 +32,31 @@ export const MiniCartSportEvent: React.FC<CartSportEventProps> = ({
         <p>СПОРТИВНЫЕ</p>
       </div>
       {/* Название события */}
-      <h2 className={styles.eventName}>{data.name}</h2>
+      <h3 className={styles.eventName}>{data.name}</h3>
 
       <h4 className={`${styles.eventText} ${styles.eventSubTitle}`}>
         {data.name}
       </h4>
 
       {/* Вид спорта */}
-      <h3 className={styles.typeEvent}>
+      <h4 className={styles.typeEvent}>
         <span className={styles.eventText}>ВИД СПОРТА: </span>
         {data.sport || "Тип спорта недоступен"}
-      </h3>
+      </h4>
 
       {/* Количество участников */}
-      <h3 className={styles.participantsCount}>
+      <h4 className={styles.participantsCount}>
         {data.participants_count} УЧАСТНИКОВ
-      </h3>
+      </h4>
 
       <hr className={styles.hr} style={{ color: statusColor }} />
 
       {/* Локация (город + даты) */}
-      <h3 className={styles.location}>
+      <h4 className={styles.location}>
         {data.city
           ? `${data.city}, ${formatDateRange(data.start_date, data.end_date)}`
           : "Локация недоступна"}
-      </h3>
+      </h4>
 
       {/* ID события */}
       <h4 className={styles.id}>№ ЕКП {data.id}</h4>
