@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: space-between;
   font-family: "Evolventa", Arial, sans-serif;
-  transition: margin-top 0.3s ease; /* Плавный переход на изменение положения */
+  transition: margin-top 0.3s ease;
 
   .clear,
   .show {
@@ -90,7 +90,6 @@ h1.hidden {
 }
 
 .search {
-  // margin-top: 60px;
   width: 134px;
   height: 65px;
   font-family: "Evolventa", Arial, sans-serif;
@@ -102,4 +101,74 @@ h1.hidden {
   border: none;
   border-radius: 20px;
   margin-top: auto;
+}
+
+
+@media (max-width: 768px) {
+  .buttons {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 60px;
+  }
+
+  .clear {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .show {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .inputs {
+    grid-template-columns: 1fr;
+    padding-bottom: 20px;
+    margin-top: 20px;
+    gap: 20px;
+  }
+
+  .inputs_flex, .inputs_flex2 {
+    gap: 20px;
+  }
+
+	.age{
+		margin-left: -60px;
+	}
+
+  .search {
+    width: 100%;
+    height: 50px;
+    margin-top: 20px;
+  }
+}
+
+/* Для экрана размером с телефоны */
+@media (max-width: 480px) {
+  .buttons {
+    margin-top: 40px; /* Еще меньший отступ сверху */
+  }
+
+  .inputs_flex,
+  .inputs_flex2 {
+    flex-direction: column;
+    gap: 10px; /* Уменьшаем отступы */
+  }
+
+  .inputs {
+    gap: 15px; /* Уменьшаем отступы между элементами */
+  }
+
+  h1 {
+    font-size: 18px; /* Еще меньший размер шрифта */
+  }
+
+  .search {
+    height: 45px; /* Меньший размер кнопки */
+  }
 }

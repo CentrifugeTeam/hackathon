@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useEvents } from "../../api/eventName";
 import { useSportEvents } from "../../api/sportName";
-import { useLocationEvents } from "../../api/locationName"; // Импортируем хук useLocationEvents
+import { useLocationEvents } from "../../api/locationName";
 import { MultiSelectDropdown } from "../../../../shared/ui/components/MultiSelectDropdown";
 import styles from "./filterform.module.scss";
 import { ChooseSexDropdown } from "../../../../shared/ui/components/ChooseSexDropdown";
@@ -9,8 +9,13 @@ import { ChooseAgeInput } from "../../../../shared/ui/components/ChooseAgeInput"
 import { ChooseMemberCount } from "../../../../shared/ui/components/ChooseMemberCount";
 import { ChooseDateInput } from "../../../../shared/ui/components/ChooseDateInput";
 import { useSexEvents } from "../../api/sexName";
+import { useCompetitionEvents } from "../../api/competitionName";
 
-export const FilterForm = () => {
+export const FilterForm = ({
+  onFilterChange,
+}: {
+  onFilterChange: (filters: Record<string, any>) => void;
+}) => {
   const [isFilterVisible, setFilterVisible] = useState(false);
 
   const [multiSelectEventName, setMultiSelectEventName] = useState<string[]>(
@@ -19,17 +24,30 @@ export const FilterForm = () => {
   const [multiSelectSportType, setMultiSelectSportType] = useState<string[]>(
     []
   );
-  const [multiSelectValues3, setMultiSelectValues3] = useState<string[]>([]);
+  const [multiSelectValues3, setMultiSelectValues3] = useState<string[]>([]); // Дисциплина
   const [multiSelectValues4, setMultiSelectValues4] = useState<string[]>([]);
-  const [multiSelectValues5, setMultiSelectValues5] = useState<string[]>([]);
+  const [multiSelectValues5, setMultiSelectValues5] = useState<string[]>([]); // Программа
 
-  const [searchQuery, setSearchQuery] = useState<string>(""); // Состояние для поискового запроса
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [sexQuery, setSexQuery] = useState<string>("");
   const [sex, setSex] = useState<string[]>([]);
   const [minAge, setMinAge] = useState<string>("");
   const [maxAge, setMaxAge] = useState<string>("");
-  const [date, setDate] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [memberCount, setMemberCount] = useState<string>("");
+
+  const handleSearch = () => {
+    const filters = {
+      sports: multiSelectSportType.join(","),
+      competitions: multiSelectValues5.join(","),
+      categories: multiSelectValues3.join(","),
+      cities: multiSelectValues4.join(","),
+      start_date: startDate || "2024-01-01",
+      end_date: endDate || "2026-01-01",
+    };
+    onFilterChange(filters);
+  };
 
   const {
     data: eventData,
@@ -37,7 +55,7 @@ export const FilterForm = () => {
     error: errorEvents,
     fetchNextPage: fetchNextEventPage,
     hasNextPage: hasNextEventPage,
-  } = useEvents(1, 10, searchQuery); // Передаем поисковый запрос
+  } = useEvents(1, 10, searchQuery);
 
   const {
     data: sportEventData,
@@ -45,7 +63,7 @@ export const FilterForm = () => {
     error: errorSports,
     fetchNextPage: fetchNextSportPage,
     hasNextPage: hasNextSportPage,
-  } = useSportEvents(1, 10, searchQuery); // Передаем поисковый запрос для видов спорта
+  } = useSportEvents(1, 10, searchQuery);
 
   const {
     data: locationData,
@@ -53,9 +71,22 @@ export const FilterForm = () => {
     error: errorLocations,
     fetchNextPage: fetchNextLocationPage,
     hasNextPage: hasNextLocationPage,
-  } = useLocationEvents(1, 20, searchQuery); // Передаем поисковый запрос для локаций
+  } = useLocationEvents(1, 20, searchQuery);
 
   const { data: sexEventData } = useSexEvents(sexQuery);
+
+  const { data: programData } = useCompetitionEvents(
+    "program",
+    1,
+    30,
+    searchQuery
+  );
+  const { data: disciplineData } = useCompetitionEvents(
+    "discipline",
+    1,
+    30,
+    searchQuery
+  );
 
   const toggleFilter = () => {
     setFilterVisible(!isFilterVisible);
@@ -67,11 +98,12 @@ export const FilterForm = () => {
     setMultiSelectValues3([]);
     setMultiSelectValues4([]);
     setMultiSelectValues5([]);
-    setSearchQuery(""); // Очистить поисковый запрос
+    setSearchQuery("");
     setSex([]);
     setMinAge("");
     setMaxAge("");
-    setDate("");
+    setStartDate("");
+    setEndDate("");
     setMemberCount("");
   };
 
@@ -93,8 +125,31 @@ export const FilterForm = () => {
     ? sexEventData.items.map((item) => item.name)
     : [];
 
+  const programOptions = programData
+    ? programData.pages.flatMap((page) => page.items.map((item) => item.name))
+    : [];
+
+  const disciplineOptions = disciplineData
+    ? disciplineData.pages.flatMap((page) =>
+        page.items.map((item) => item.name)
+      )
+    : [];
+
+  // // Функция для отображения введенных данных
+  // const handleSearch = () => {
+  //   console.log("Название мероприятия:", multiSelectEventName);
+  //   console.log("Вид спорта:", multiSelectSportType);
+  //   console.log("Дисциплина:", multiSelectValues3); // Дисциплина теперь массив или строка
+  //   console.log("Место проведения:", multiSelectValues4);
+  //   console.log("Программа:", multiSelectValues5); // Программа теперь массив или строка
+  //   console.log("Пол:", sex);
+  //   console.log("Дата начала:", startDate);
+  //   console.log("Дата окончания:", endDate);
+  //   console.log("Количество участников:", memberCount);
+  // };
+
   return (
-    <>
+    <div className={styles.filterForm}>
       <div className={styles.buttons}>
         <h1 className={isFilterVisible ? "" : styles.hidden}>
           ЗАПОЛНИТЕ ФОРМУ
@@ -123,7 +178,7 @@ export const FilterForm = () => {
           options={eventOptions}
           fetchMoreOptions={fetchNextEventPage}
           hasNextPage={!!hasNextEventPage}
-          onSearch={setSearchQuery} // Передаем функцию обновления поискового запроса
+          onSearch={setSearchQuery}
         />
         <MultiSelectDropdown
           label="Вид спорта"
@@ -132,16 +187,16 @@ export const FilterForm = () => {
           options={sportEventOptions}
           fetchMoreOptions={fetchNextSportPage}
           hasNextPage={!!hasNextSportPage}
-          onSearch={setSearchQuery} // Передаем функцию обновления поискового запроса
+          onSearch={setSearchQuery}
         />
         <MultiSelectDropdown
           label="Дисциплина"
           value={multiSelectValues3}
-          setValue={setMultiSelectValues3}
-          options={["Дисциплина 1", "Дисциплина 2"]}
+          setValue={setMultiSelectValues3} // Привязка к состоянию дисциплины
+          options={disciplineOptions}
           fetchMoreOptions={() => {}}
           hasNextPage={false}
-          onSearch={() => {}} // Пустая функция
+          onSearch={setSearchQuery}
         />
         <MultiSelectDropdown
           label="Место проведения"
@@ -150,16 +205,16 @@ export const FilterForm = () => {
           options={locationOptions}
           fetchMoreOptions={fetchNextLocationPage}
           hasNextPage={!!hasNextLocationPage}
-          onSearch={setSearchQuery} // Передаем функцию обновления поискового запроса
+          onSearch={setSearchQuery}
         />
         <MultiSelectDropdown
           label="Программа"
           value={multiSelectValues5}
-          setValue={setMultiSelectValues5}
-          options={["Программа 1", "Программа 2"]}
+          setValue={setMultiSelectValues5} // Привязка к состоянию программы
+          options={programOptions}
           fetchMoreOptions={() => {}}
           hasNextPage={false}
-          onSearch={() => {}} // Пустая функция
+          onSearch={setSearchQuery}
         />
 
         <div className={styles.inputs_flex}>
@@ -167,7 +222,7 @@ export const FilterForm = () => {
             label="Выберите пол"
             value={sex}
             setValue={setSex}
-            options={sexOptions} // Уже массив строк
+            options={sexOptions}
             onSearch={setSexQuery}
           />
           <ChooseAgeInput
@@ -177,15 +232,26 @@ export const FilterForm = () => {
             setMaxAge={setMaxAge}
           />
         </div>
+
         <ChooseMemberCount
           memberCount={memberCount}
           setMemberCount={setMemberCount}
         />
         <div className={styles.inputs_flex2}>
-          <ChooseDateInput label="Начало" date={date} setDate={setDate} />
-          <ChooseDateInput label="Конец" date={date} setDate={setDate} />
+          <ChooseDateInput
+            label="Дата начала"
+            date={startDate}
+            setDate={setStartDate}
+          />
+          <ChooseDateInput
+            label="Дата окончания"
+            date={endDate}
+            setDate={setEndDate}
+          />
         </div>
-        <button className={styles.search}>Поиск</button>
+        <button className={styles.search} onClick={handleSearch}>
+          Поиск
+        </button>
       </div>
 
       {isLoadingEvents && <p>Загрузка мероприятий...</p>}
@@ -196,7 +262,7 @@ export const FilterForm = () => {
 
       {isLoadingLocations && <p>Загрузка локаций...</p>}
       {errorLocations && <p>Произошла ошибка при загрузке данных локаций.</p>}
-    </>
+    </div>
   );
 };
 

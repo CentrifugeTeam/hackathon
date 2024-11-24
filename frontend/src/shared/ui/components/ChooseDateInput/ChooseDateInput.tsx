@@ -29,6 +29,7 @@ export const ChooseDateInput = ({
         className={styles.select}
         value={localDate}
         onChange={(e) => setLocalDate(e.target.value)}
+        pattern="\d{4}-\d{2}-\d{2}"
       />
     </div>
   );

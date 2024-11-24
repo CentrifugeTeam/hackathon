@@ -3,7 +3,7 @@ import styles from "./choosemembercount.module.scss";
 
 export const ChooseMemberCount = ({
   memberCount,
-  setMemberCount,
+  setMemberCount
 }: {
   memberCount: string;
   setMemberCount: (value: string) => void;

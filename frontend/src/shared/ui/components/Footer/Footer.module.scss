@@ -6,14 +6,20 @@
   background-color: #3168f21b;
   font-family: "Evolventa", Arial, sans-serif;
 
+	.logo{
+		margin-left: 20px;
+		height: 50px;
+	}
+
   .content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+		width: 100%;
+		margin-right: 20px;
 
     .context {
       display: flex;
-      margin-left: 112px;
       flex-direction: column;
 
       .text {
@@ -25,6 +31,28 @@
         color: #3169f2;
         cursor: pointer;
       }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+		display: block;
+    height: 200px;
+    padding: 10px;
+		width: 96.5%;
+  }
+
+	.logo {
+		margin-top: 10px;
+	}
+
+  .content {
+		margin-top: 40px;
+
+    .context {
+      margin-bottom: 10px;
+      align-items: center;
     }
   }
 }

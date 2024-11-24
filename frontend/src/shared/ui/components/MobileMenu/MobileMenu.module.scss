@@ -1,0 +1,26 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #3169F2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.menuContent {
+	margin-top: -120px;
+	color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: left;
+  width: 70%;
+}
+
+.text {
+  margin-bottom: 40px;
+}
+

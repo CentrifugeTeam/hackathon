@@ -1,14 +1,18 @@
 .card {
+	text-align: left;
   padding: 14px;
+	height: 440px;
   max-width: 341px;
-  //   height: 100;
   border-radius: 25px;
   background-color: #292d33;
   color: white;
-  //   width: calc(33.33% - 10px);
   margin-bottom: 20px;
   box-sizing: border-box;
   font-family: "Evolventa", Arial, sans-serif;
+}
+
+.mobile{
+	max-width: 500px;
 }
 
 .headerCard {

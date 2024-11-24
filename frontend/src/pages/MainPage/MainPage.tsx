@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MiniCartSportEvent } from "../../shared/ui/components/MiniCardSportEvent";
 import { FilterForm } from "../../features/Filter/ui/FilterForm";
 import { useSportEvents } from "../../shared/api/events";
@@ -6,20 +6,65 @@ import styles from "./mainpage.module.scss";
 import { getEventStatus } from "../../shared/utils/getEventStatus";
 import { News } from "../../shared/ui/components/News";
 
+// Функция для получения текущей даты в формате YYYY-MM-DD
+const getCurrentDate = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0]; // Берём только дату без времени
+};
+
 export const MainPage = () => {
-  const [page, setPage] = useState(1); // Страница по умолчанию
-  const size = 20; // Размер страницы
+  const size = 21; // Количество элементов на странице
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Используем хук для запроса данных
-  const { data, isLoading, error } = useSportEvents(page, size);
+  const [filters, setFilters] = useState({
+    page: 1,
+    size,
+    sports: [],
+    categories: [],
+    competitions: [],
+    cities: [],
+    participant_type: "",
+    participant_from: undefined,
+    participant_to: undefined,
+    participants_count: undefined,
+    start_date: getCurrentDate(), // Устанавливаем текущую дату
+    end_date: undefined,
+  });
 
-  // Обработчики для кнопок пагинации
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const { data, isLoading, error } = useSportEvents(filters);
+
   const handleNextPage = () => {
-    setPage((prevPage) => prevPage + 1);
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      page: prevFilters.page + 1,
+    }));
   };
 
   const handlePrevPage = () => {
-    setPage((prevPage) => Math.max(prevPage - 1, 1));
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      page: Math.max(prevFilters.page - 1, 1),
+    }));
+  };
+
+  const handleFilterChange = (newFilters: any) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      ...newFilters,
+      page: 1, // Сбрасываем страницу при изменении фильтров
+    }));
   };
 
   if (isLoading) {
@@ -31,14 +76,14 @@ export const MainPage = () => {
   }
 
   return (
-    <>
+    <div className={styles.mainPage}>
       <h1 className={styles.title}>
-        <span className={styles.unique}>ЕДИНЫЙ</span> КАЛЕНДАРЬ ПЛАН
+        <span className={styles.unique}>ЕДИНЫЙ</span> КАЛЕНДАРНЫЙ ПЛАН
         ФИЗКУЛЬТУРНЫХ
         <br /> И СПОРТИВНЫХ МЕРОПРИЯТИЙ
       </h1>
       <News />
-      <FilterForm />
+      <FilterForm onFilterChange={handleFilterChange} />
       <div className={styles.miniCards}>
         {data?.items.map((event) => {
           const { status, statusColor } = getEventStatus(
@@ -46,32 +91,26 @@ export const MainPage = () => {
             event.end_date
           );
           return (
-            <MiniCartSportEvent
-              key={event.id}
-              data={{
-                id: event.id,
-                name: event.name,
-                start_date: event.start_date,
-                end_date: event.end_date,
-                participants_count: event.participants_count,
-                city: event.city,
-                sport: event.sport,
-              }}
-              statusColor={statusColor}
-              status={status}
-            />
+            <center className={styles.card} key={event.id}>
+              <MiniCartSportEvent
+                data={event}
+                statusColor={statusColor}
+                status={status}
+                isMobile={isMobile}
+              />
+            </center>
           );
         })}
       </div>
       <div className={styles.pagination}>
         <button
           onClick={handlePrevPage}
-          disabled={page === 1}
+          disabled={filters.page === 1}
           className={styles.paginationButton}
         >
           Предыдущая страница
         </button>
-        <span className={styles.pageInfo}>Страница: {page}</span>
+        <span className={styles.pageInfo}>Страница: {filters.page}</span>
         <button
           onClick={handleNextPage}
           disabled={data && data.items.length < size}
@@ -80,7 +119,7 @@ export const MainPage = () => {
           Следующая страница
         </button>
       </div>
-    </>
+    </div>
   );
 };
 
