@@ -6,37 +6,33 @@ import { MultiSelectDropdown } from "../MultiSelectDropdown";
 import { useSportEvents } from "../../../../features/Filter/api/sportName";
 import { registerEmail, EmailRegistrationData } from "./api/sendEmail";
 
-// Assuming sportEventOptions is an array of objects with id and sport
 export const SendEmail = () => {
-  const [isVisible, setIsVisible] = useState(true); // State to control visibility
-  const blockRef = useRef<HTMLDivElement>(null); // Reference to the block
-  const closeButtonRef = useRef<HTMLImageElement>(null); // Reference to the close button
+  const [isVisible, setIsVisible] = useState(true);
+  const blockRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLImageElement>(null);
 
-  const [multiSelectSportType, setMultiSelectSportType] = useState<string[]>(
-    []
-  ); // Selected sport types
-  const [searchQuery, setSearchQuery] = useState<string>(""); // Search query for sports
-  const [email, setEmail] = useState<string>(""); // State for email input
-  const [emailError, setEmailError] = useState<boolean>(false); // Email error state
+  const [multiSelectSportType, setMultiSelectSportType] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [emailError, setEmailError] = useState<boolean>(false);
+  const [sportError, setSportError] = useState<boolean>(false);
 
   const {
     data: sportEventData,
     isLoading: isLoadingSports,
     error: errorSports,
     fetchNextPage: fetchNextSportPage,
-  } = useSportEvents(1, 10, searchQuery); // Fetch sport event options
+  } = useSportEvents(1, 10, searchQuery);
 
-  // Assuming sportEventOptions is an array of objects { id: number, sport: string }
   const sportEventOptions = sportEventData
     ? sportEventData.pages.flatMap((page) =>
         page.items.map((item) => ({
-          id: item.id, // Include id
+          id: item.id,
           sport: item.sport,
         }))
       )
     : [];
 
-  // Fixing the mutation typing to match the expected data structure
   const { mutateAsync, isPending: isMutating } = useMutation<
     void,
     Error,
@@ -44,29 +40,24 @@ export const SendEmail = () => {
   >({
     mutationFn: registerEmail,
     onSuccess: () => {
-      // Handle success (e.g., show a success message, reset form, etc.)
-      console.log("Registration successful!");
-      setEmail(""); // Clear email input on success
-      setMultiSelectSportType([]); // Clear selected sports
+      setEmail("");
+      setMultiSelectSportType([]);
     },
     onError: (error: Error) => {
-      // Handle error (e.g., show an error message)
       console.error("Error during registration:", error);
     },
   });
 
-  // Handle closing the block when clicking outside
   const handleClickOutside = (event: MouseEvent) => {
     if (
       blockRef.current &&
-      !blockRef.current.contains(event.target as Node) && // Check if click is outside the block
-      !closeButtonRef.current?.contains(event.target as Node) // Also check if click is not on the close button
+      !blockRef.current.contains(event.target as Node) &&
+      !closeButtonRef.current?.contains(event.target as Node)
     ) {
-      setIsVisible(false); // Close the component
+      setIsVisible(false);
     }
   };
 
-  // Add event listener when component mounts, remove it on unmount
   useEffect(() => {
     if (isVisible) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -79,20 +70,29 @@ export const SendEmail = () => {
     };
   }, [isVisible]);
 
-  // Close the component when close button is clicked
   const handleClose = () => {
-    setIsVisible(false); // Close the component
+    setIsVisible(false);
   };
 
-  // Handle email validation and submit
   const handleSubmit = async () => {
-    if (email.trim() === "") {
-      setEmailError(true); // Show error if email is empty
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (email.trim() === "" || !emailRegex.test(email)) {
+      setEmailError(true);
     } else {
-      setEmailError(false); // Reset error if email is valid
+      setEmailError(false);
+    }
+
+    if (multiSelectSportType.length === 0) {
+      setSportError(true);
+    } else {
+      setSportError(false);
+    }
+
+    if (email.trim() !== "" && multiSelectSportType.length > 0 && emailRegex.test(email)) {
       const selectedSportEventIds = sportEventOptions
-        .filter((sport) => multiSelectSportType.includes(sport.sport)) // Use `sport` as the filter key
-        .map((sport) => sport.id); // Get the selected sport event IDs
+        .filter((sport) => multiSelectSportType.includes(sport.sport))
+        .map((sport) => sport.id);
 
       const data: EmailRegistrationData = {
         email,
@@ -100,14 +100,14 @@ export const SendEmail = () => {
       };
 
       try {
-        await mutateAsync(data); // Call the mutation to register the email with sport events
+        await mutateAsync(data);
       } catch (error) {
         console.error("Error during registration:", error);
       }
     }
   };
 
-  if (!isVisible) return null; // If the block is not visible, return null to unmount it
+  if (!isVisible) return null;
 
   return (
     <div className={styles.block} ref={blockRef}>
@@ -119,34 +119,30 @@ export const SendEmail = () => {
       </h1>
 
       <div className={styles.input_block}>
-        <label>Введите ваш email</label>
+        <label className={emailError ? styles.errorText : ""}>{emailError ? "Введите ваш email правильно" : "Введите ваш email"}</label>
         <input
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)} // Update email state
-          className={`${emailError ? styles.errorInput : ""} ${
-            styles.emailInput
-          }`} // Add error class if email is empty
+          onChange={(e) => setEmail(e.target.value)}
+          className={`${emailError ? styles.errorInput : ""} ${styles.emailInput}`}
         />
-        {emailError && (
-          <p className={styles.errorText}>Пожалуйста, введите email</p>
-        )}
       </div>
 
       <MultiSelectDropdown
-        label="Вид спорта"
+        label="Выберите вид спорта"
         value={multiSelectSportType}
         setValue={setMultiSelectSportType}
-        options={sportEventOptions.map((option) => option.sport)} // Only pass sport names here
+        options={sportEventOptions.map((option) => option.sport)}
         fetchMoreOptions={fetchNextSportPage}
         onSearch={setSearchQuery}
+        isEror={sportError}
       />
 
       <button
         className={styles.show}
         onClick={handleSubmit}
-        disabled={isMutating} // Use `isMutating` instead of `isSubmitting`
+        disabled={isMutating}
       >
         {isMutating ? "Отправка..." : "Отправить"}
       </button>

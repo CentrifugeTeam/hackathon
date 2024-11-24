@@ -38,20 +38,33 @@ export const FilterForm = ({
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [memberCount, setMemberCount] = useState<string>("");
+  const [sortPeriod, setSortPeriod] = useState<string>(""); // Значение по умолчанию - 1 месяц
 
   const handleSearch = () => {
+    const currentDate = new Date();
+    let calculatedEndDate = new Date(currentDate);
+
+    if (sortPeriod === "1") {
+      calculatedEndDate.setMonth(currentDate.getMonth() + 1);
+    } else if (sortPeriod === "3") {
+      calculatedEndDate.setMonth(currentDate.getMonth() + 3);
+    } else if (sortPeriod === "6") {
+      calculatedEndDate.setMonth(currentDate.getMonth() + 6);
+    }
+
     const filters = {
       sports: multiSelectSportType.join(","),
       competitions: multiSelectValues5.join(","),
       categories: multiSelectValues3.join(","),
       cities: multiSelectValues4.join(","),
-      start_date: startDate || "2024-01-01",
-      end_date: endDate || "2026-01-01",
+      start_date: startDate || currentDate.toISOString().split("T")[0],
+      end_date: endDate || calculatedEndDate.toISOString().split("T")[0],
       sex: sex.join(","),
       min_age: minAge,
       max_age: maxAge,
       member_count: memberCount,
     };
+
     onFilterChange(filters);
 
     const formData = {
@@ -64,8 +77,9 @@ export const FilterForm = ({
       minAge,
       maxAge,
       startDate,
-      endDate,
+      endDate: calculatedEndDate.toISOString().split("T")[0],
       memberCount,
+      sortPeriod, // сохраняем выбранный период
     };
 
     Cookies.set("filterData", JSON.stringify(formData), { expires: 7 });
@@ -293,7 +307,29 @@ export const FilterForm = ({
           hasNextPage={false}
           onSearch={setSearchQuery}
         />
-
+        <div className={styles.sort}>
+          <label>Сортировать по периоду:</label>
+          <div className={styles.sortButtons}>
+            <button
+              className={sortPeriod === "1" ? styles.active : ""}
+              onClick={() => setSortPeriod("1")}
+            >
+              1 месяц
+            </button>
+            <button
+              className={sortPeriod === "3" ? styles.active : ""}
+              onClick={() => setSortPeriod("3")}
+            >
+              3 месяца
+            </button>
+            <button
+              className={sortPeriod === "6" ? styles.active : ""}
+              onClick={() => setSortPeriod("6")}
+            >
+              6 месяцев
+            </button>
+          </div>
+        </div>
         <div className={styles.inputs_flex}>
           <ChooseSexDropdown
             label="Выберите пол"
@@ -302,12 +338,6 @@ export const FilterForm = ({
             options={sexOptions}
             onSearch={setSexQuery}
           />
-          {/* <ChooseAgeInput
-            minAge={minAge}
-            setMinAge={setMinAge}
-            maxAge={maxAge}
-            setMaxAge={setMaxAge}
-          /> */}
         </div>
 
         <ChooseMemberCount

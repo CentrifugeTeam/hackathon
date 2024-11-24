@@ -1,11 +1,11 @@
 .block {
-  position: fixed; // Фиксированное позиционирование относительно окна браузера
-  top: 50%; // Центрирование по вертикали
-  left: 50%; // Центрирование по горизонтали
-  transform: translate(-50%, -50%); // Сдвиг для точного центрирования
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 700px;
   height: 532px;
-  background-color: #ffffff;
+  background-color: #f2f2f2;
   border-radius: 25px;
   border: 2px solid #3169f2;
   display: flex;
@@ -57,6 +57,7 @@
     height: 60px;
     color: #3169f2;
     border: 1px solid #3169f2;
+    background-color: #f2f2f2;
     border-radius: 20px;
     transition: background-color 0.2s ease, color 0.2s ease;
     cursor: pointer;
@@ -71,15 +72,64 @@
     background: #3169f2;
     color: white;
   }
-}
 
-.errorInput {
-  border: 2px solid red !important;
-}
+  .errorText {
+    color: red;
+  }
 
-.errorText {
-  color: red;
-  font-size: 12px;
-	margin-left: 14px;
-  margin-top: -17px;
+  @media (max-width: 768px) {
+    width: 90%;
+    height: 452px;
+    padding-left: 24px;
+    padding-right: 24px;
+
+    .title {
+      font-size: 20px;
+      margin-top: 15px;
+      margin-bottom: 30px;
+    }
+
+    .input_block {
+      width: 100%;
+
+      label {
+        font-size: 14px;
+      }
+
+      input {
+        height: 50px;
+        font-size: 14px;
+      }
+    }
+
+    .show {
+      width: 100%;
+      font-size: 14px;
+      height: 50px;
+    }
+
+    .close {
+      margin-top: 15px;
+      margin-right: 15px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    width: 85%;
+    height: 450px;
+
+    .input_block {
+      width: 100%;
+    }
+
+    .show {
+      width: 100%;
+    }
+
+    .title {
+      font-size: 18px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+  }
 }

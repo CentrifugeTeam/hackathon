@@ -149,27 +149,66 @@ h1.hidden {
   }
 }
 
-/* Для экрана размером с телефоны */
 @media (max-width: 480px) {
   .buttons {
-    margin-top: 40px; /* Еще меньший отступ сверху */
+    margin-top: 40px;
   }
 
   .inputs_flex,
   .inputs_flex2 {
     flex-direction: column;
-    gap: 10px; /* Уменьшаем отступы */
+    gap: 10px;
   }
 
   .inputs {
-    gap: 15px; /* Уменьшаем отступы между элементами */
+    gap: 15px;
   }
 
   h1 {
-    font-size: 18px; /* Еще меньший размер шрифта */
+    font-size: 18px;
   }
 
   .search {
-    height: 45px; /* Меньший размер кнопки */
+    height: 45px;
+  }
+}
+
+.sort {
+  display: flex;
+  flex-direction: column;
+  font-family: "Evolventa", Arial, sans-serif;
+
+  label {
+    // margin-bottom: 8px;
+    // font-weight: bold;
+  }
+
+  .sortButtons {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+
+    button {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+      cursor: pointer;
+      transition: background 0.3s;
+      height: 65px;
+      width: 100px;
+      font-family: "Evolventa", Arial, sans-serif;
+
+      border-radius: 15px;
+
+      &.active {
+        background: #3169f2;
+        color: #fff;
+        border-color: #007bff;
+      }
+
+      &:hover:not(.active) {
+        background: #ececec;
+      }
+    }
   }
 }

@@ -31,8 +31,8 @@ export const Footer = () => {
 
 					<div className={styles.context}>
 						<h3>Проект</h3>
-						<a className={styles.text}>Наш Github</a>
-						<a className={styles.text}>Презентация</a>
+						<a href="https://github.com/CentrifugeTeam" className={styles.text}>Наш Github</a>
+						<a href="https://drive.google.com/file/d/1EjmdGXJSJvw57hX4JASA24q86qhoRaUP/view?usp=share_link" className={styles.text}>Презентация</a>
 					</div>
 
 					<div className={styles.context}>
@@ -51,8 +51,8 @@ export const Footer = () => {
 
 					<div className={styles.context}>
 						<h3>Спонсоры</h3>
-						<a className={styles.text}>ВФСК ГТО</a>
-						<a className={styles.text}>Миниспорт Россия</a>
+						<a href="https://gto.ru/" className={styles.text}>ВФСК ГТО</a>
+						<a href="https://www.minsport.gov.ru/" className={styles.text}>Миниспорт Россия</a>
 					</div>
 				</div>
 			</footer>
