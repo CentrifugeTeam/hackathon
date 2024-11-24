@@ -6,33 +6,65 @@ import styles from "./mainpage.module.scss";
 import { getEventStatus } from "../../shared/utils/getEventStatus";
 import { News } from "../../shared/ui/components/News";
 
-export const MainPage = () => {
-  const [page, setPage] = useState(1); // Страница по умолчанию
-  const size = 21; // Размер страницы
-	const [isMobile, setIsMobile] = useState(false);
+// Функция для получения текущей даты в формате YYYY-MM-DD
+const getCurrentDate = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0]; // Берём только дату без времени
+};
 
-	useEffect(() => {
+export const MainPage = () => {
+  const size = 21; // Количество элементов на странице
+  const [isMobile, setIsMobile] = useState(false);
+
+  const [filters, setFilters] = useState({
+    page: 1,
+    size,
+    sports: [],
+    categories: [],
+    competitions: [],
+    cities: [],
+    participant_type: "",
+    participant_from: undefined,
+    participant_to: undefined,
+    participants_count: undefined,
+    start_date: getCurrentDate(),
+    end_date: undefined,
+  });
+
+  useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
     handleResize();
-    window.addEventListener("resize", handleResize); // обработчик события изменения размера
+    window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  // Используем хук для запроса данных
-  const { data, isLoading, error } = useSportEvents(page, size);
+  const { data, isLoading, error } = useSportEvents(filters);
 
-  // Обработчики для кнопок пагинации
   const handleNextPage = () => {
-    setPage((prevPage) => prevPage + 1);
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      page: prevFilters.page + 1,
+    }));
   };
 
   const handlePrevPage = () => {
-    setPage((prevPage) => Math.max(prevPage - 1, 1));
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      page: Math.max(prevFilters.page - 1, 1),
+    }));
+  };
+
+  const handleFilterChange = (newFilters: any) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      ...newFilters,
+      page: 1, // Сбрасываем страницу при изменении фильтров
+    }));
   };
 
   if (isLoading) {
@@ -51,53 +83,43 @@ export const MainPage = () => {
         <br /> И СПОРТИВНЫХ МЕРОПРИЯТИЙ
       </h1>
       <News />
-			{/* {isMobile && <div className={styles.bgColorForMobile} />} */}
-			<FilterForm />
-			<div className={styles.miniCards}>
-				{data?.items.map((event) => {
-					const { status, statusColor } = getEventStatus(
-						event.start_date,
-						event.end_date
-					);
-					return (
-						<center className={styles.card}>
-							<MiniCartSportEvent
-								key={event.id}
-								data={{
-									id: event.id,
-									name: event.name,
-									start_date: event.start_date,
-									end_date: event.end_date,
-									participants_count: event.participants_count,
-									city: event.city,
-									sport: event.sport
-								}}
-								statusColor={statusColor}
-								status={status}
-								isMobile={isMobile}
-							/>
-						</center>
-					);
-				})}
-			</div>
-			<div className={styles.pagination}>
-				<button
-					onClick={handlePrevPage}
-					disabled={page === 1}
-					className={styles.paginationButton}
-				>
-					Предыдущая страница
-				</button>
-				<span className={styles.pageInfo}>Страница: {page}</span>
-				<button
-					onClick={handleNextPage}
-					disabled={data && data.items.length < size}
-					className={styles.paginationButton}
-				>
-					Следующая страница
-				</button>
-			</div>
-		</div>
+      <FilterForm onFilterChange={handleFilterChange} />
+      <div className={styles.miniCards}>
+        {data?.items.map((event) => {
+          const { status, statusColor } = getEventStatus(
+            event.start_date,
+            event.end_date
+          );
+          return (
+            <center className={styles.card} key={event.id}>
+              <MiniCartSportEvent
+                data={event}
+                statusColor={statusColor}
+                status={status}
+                isMobile={isMobile}
+              />
+            </center>
+          );
+        })}
+      </div>
+      <div className={styles.pagination}>
+        <button
+          onClick={handlePrevPage}
+          disabled={filters.page === 1}
+          className={styles.paginationButton}
+        >
+          Предыдущая страница
+        </button>
+        <span className={styles.pageInfo}>Страница: {filters.page}</span>
+        <button
+          onClick={handleNextPage}
+          disabled={data && data.items.length < size}
+          className={styles.paginationButton}
+        >
+          Следующая страница
+        </button>
+      </div>
+    </div>
   );
 };
 
