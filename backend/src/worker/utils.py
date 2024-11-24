@@ -6,7 +6,7 @@ from sqlalchemy.orm import DeclarativeBase
 from typing import Generic, TypeVar
 
 from web.app.utils.email_sender import SMTPMessage
-from .parser_pdf.parser import Row
+from .parser_pdf.parser import Row, AgeGroupSchema
 from .settings import settings as conf_settings
 
 from storage.db.models import EventType, SportEvent, AgeGroup, Location, Competition, Users
@@ -82,7 +82,10 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
 
         # Сохраняем возрастные группы (AgeGroup)
         for sex in row.sexes:
-            await _create_if_dont_exist(session, {**sex.model_dump(by_alias=True), 'event_id': event.id}, AgeGroup)
+            stmt = select(AgeGroup).where(AgeGroup.name == sex.name).where(AgeGroup.age_from == sex.start).where(AgeGroup.age_to == sex.end)
+            obj = await session.scalar(stmt)
+            if obj is None:
+                await _create_model(session, {**sex.model_dump(by_alias=True), 'event_id': event.id}, AgeGroup)
 
         # Сохраняем дисциплины (Competition)
         for competition in row.competitions:
