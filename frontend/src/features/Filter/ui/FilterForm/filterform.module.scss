@@ -7,6 +7,7 @@
   justify-content: space-between;
   font-family: "Evolventa", Arial, sans-serif;
   transition: margin-top 0.3s ease;
+  z-index: 100;
 
   .clear,
   .show {
@@ -103,7 +104,6 @@ h1.hidden {
   margin-top: auto;
 }
 
-
 @media (max-width: 768px) {
   .buttons {
     flex-direction: column;
@@ -133,13 +133,14 @@ h1.hidden {
     gap: 20px;
   }
 
-  .inputs_flex, .inputs_flex2 {
+  .inputs_flex,
+  .inputs_flex2 {
     gap: 20px;
   }
 
-	.age{
-		margin-left: -60px;
-	}
+  .age {
+    margin-left: -60px;
+  }
 
   .search {
     width: 100%;

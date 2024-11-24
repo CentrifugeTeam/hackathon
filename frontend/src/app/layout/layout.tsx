@@ -1,8 +1,9 @@
 import { Outlet } from "react-router-dom";
 import styles from "./layout.module.scss";
 import { Header } from "../../shared/ui/components/Header";
-import { Footer } from "../../shared/ui/components/Footer"
+import { Footer } from "../../shared/ui/components/Footer";
 import { CookieConsentBanner } from "../../shared/ui/components/CookieConsentBanner";
+import { SendEmail } from "../../shared/ui/components/SendEmail";
 
 export const Layout = () => {
   return (
@@ -13,8 +14,9 @@ export const Layout = () => {
           <Outlet />
         </div>
       </main>
-			<Footer />
-			<CookieConsentBanner />
+      <Footer />
+      <SendEmail />
+      <CookieConsentBanner />
     </div>
   );
 };

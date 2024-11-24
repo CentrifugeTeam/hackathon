@@ -1,25 +1,25 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "../dropdown.module.scss";
 import Arrow from "../../../../assets/iconamoon_arrow-up-2-light.svg";
 
 interface MultiSelectDropdownProps {
-  label: string;
-  value: string[];
-  setValue: (value: string[]) => void;
-  options: string[];
-  fetchMoreOptions: () => void;
-  hasNextPage: boolean;
-  onSearch: (query: string) => void;
+  label?: string;
+  value?: string[];
+  setValue?: (value: string[]) => void;
+  options?: string[];
+  fetchMoreOptions?: () => void;
+  hasNextPage?: boolean;
+  onSearch?: (query: string) => void;
 }
 
 export const MultiSelectDropdown = ({
-  label,
-  value,
-  setValue,
-  options,
-  fetchMoreOptions,
-  hasNextPage,
-  onSearch,
+  label = "Поиск...",
+  value = [],
+  setValue = () => {},
+  options = [],
+  fetchMoreOptions = () => {},
+  hasNextPage = false,
+  onSearch = () => {},
 }: MultiSelectDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [localValue, setLocalValue] = useState<string[]>(value);
@@ -29,14 +29,23 @@ export const MultiSelectDropdown = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
 
+  // Используем useRef для хранения предыдущего значения value
+  const prevValueRef = useRef(value);
+
+  // Сравниваем только значение value, чтобы избежать лишних обновлений
   useEffect(() => {
-    setLocalValue(value);
+    if (prevValueRef.current !== value) {
+      prevValueRef.current = value;
+      setLocalValue(value); // Обновляем localValue, если value изменилось
+    }
   }, [value]);
 
+  // Когда localValue изменяется, обновляем setValue
   useEffect(() => {
     setValue(localValue);
   }, [localValue, setValue]);
 
+  // Фильтрация опций на основе поискового запроса
   useEffect(() => {
     setFilteredOptions(
       options.filter((option) =>
@@ -45,21 +54,26 @@ export const MultiSelectDropdown = ({
     );
   }, [options, searchQuery]);
 
+  // Обработка поиска
   useEffect(() => {
     onSearch(searchQuery);
     setFilteredOptions([]); // Очищаем фильтрованные опции при изменении поискового запроса
   }, [searchQuery, onSearch]);
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node) &&
-      !isEditing
-    ) {
-      setIsOpen(false);
-      setIsEditing(false);
-    }
-  };
+  // Обработчик клика вне дропдауна для его закрытия
+  const handleClickOutside = useCallback(
+    (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        !isEditing
+      ) {
+        setIsOpen(false);
+        setIsEditing(false);
+      }
+    },
+    [isEditing]
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -71,24 +85,27 @@ export const MultiSelectDropdown = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, isEditing]);
+  }, [isOpen, handleClickOutside]);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
 
+  // Обработчик выбора опции
   const handleSelect = (item: string) => {
     setLocalValue((prev) =>
       prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
     );
   };
 
+  // Очистка выбора
   const handleClear = () => {
     setLocalValue([]);
     setSearchQuery("");
     setFilteredOptions([]); // Очищаем фильтрованные опции при очистке
   };
 
+  // Отображение выбранных элементов
   const renderSelectedItems = () => {
     if (localValue.length <= 2) {
       return localValue.join(", ");
@@ -102,12 +119,14 @@ export const MultiSelectDropdown = ({
     );
   };
 
+  // Включение режима редактирования (поиск)
   const handleEdit = () => {
     setIsEditing(true);
     setSearchQuery("");
     setFilteredOptions([]); // Очищаем фильтрованные опции при начале редактирования
   };
 
+  // Обработка прокрутки списка и загрузка дополнительных опций
   const handleScroll = () => {
     if (menuRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = menuRef.current;
