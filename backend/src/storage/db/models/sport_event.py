@@ -54,5 +54,6 @@ class SportEvent(Base):
     location: Mapped[Location] = relationship(back_populates='sports', cascade='delete')
     age_groups: Mapped[list[AgeGroup]] = relationship(back_populates='sport', cascade='delete')
     competitions: Mapped[list[Competition]] = relationship(back_populates='sport', cascade='delete')
+    users: Mapped[list['Users']] = relationship(back_populates='events', secondary='user_settings')
 
 # TODO: воркер работает не корректно с age

@@ -54,7 +54,7 @@ export const FilterForm = ({
     };
     onFilterChange(filters);
 
-		const formData = {
+    const formData = {
       eventNames: multiSelectEventName,
       sportTypes: multiSelectSportType,
       disciplines: multiSelectValues3,
@@ -64,11 +64,11 @@ export const FilterForm = ({
       minAge,
       maxAge,
       startDate,
-			endDate,
+      endDate,
       memberCount,
     };
 
-		Cookies.set("filterData", JSON.stringify(formData), { expires: 7 });
+    Cookies.set("filterData", JSON.stringify(formData), { expires: 7 });
   };
 
   const {
@@ -133,60 +133,69 @@ export const FilterForm = ({
 
   // Загрузка фильтров из cookies при монтировании компонента
   useEffect(() => {
-		const savedFilters = Cookies.get("filterData");
+    const savedFilters = Cookies.get("filterData");
 
-		if (savedFilters) {
-			const parsedFilters = JSON.parse(savedFilters);
+    if (savedFilters) {
+      const parsedFilters = JSON.parse(savedFilters);
 
-			// Проверка и установка значений для разных фильтров
-			setMultiSelectEventName(
-				Array.isArray(parsedFilters.eventNames)
-					? parsedFilters.eventNames
-					: parsedFilters.eventNames ? parsedFilters.eventNames.split(",") : []
-			);
-			setMultiSelectSportType(
-				Array.isArray(parsedFilters.sportTypes)
-					? parsedFilters.sportTypes
-					: parsedFilters.sportTypes ? parsedFilters.sportTypes.split(",") : []
-			);
-			setMultiSelectValues3(
-				Array.isArray(parsedFilters.disciplines)
-					? parsedFilters.disciplines
-					: parsedFilters.disciplines ? parsedFilters.disciplines.split(",") : []
-			);
-			setMultiSelectValues4(
-				Array.isArray(parsedFilters.locations)
-					? parsedFilters.locations
-					: parsedFilters.locations ? parsedFilters.locations.split(",") : []
-			);
-			setMultiSelectValues5(
-				Array.isArray(parsedFilters.programs)
-					? parsedFilters.programs
-					: parsedFilters.programs ? parsedFilters.programs.split(",") : []
-			);
+      // Проверка и установка значений для разных фильтров
+      setMultiSelectEventName(
+        Array.isArray(parsedFilters.eventNames)
+          ? parsedFilters.eventNames
+          : parsedFilters.eventNames
+          ? parsedFilters.eventNames.split(",")
+          : []
+      );
+      setMultiSelectSportType(
+        Array.isArray(parsedFilters.sportTypes)
+          ? parsedFilters.sportTypes
+          : parsedFilters.sportTypes
+          ? parsedFilters.sportTypes.split(",")
+          : []
+      );
+      setMultiSelectValues3(
+        Array.isArray(parsedFilters.disciplines)
+          ? parsedFilters.disciplines
+          : parsedFilters.disciplines
+          ? parsedFilters.disciplines.split(",")
+          : []
+      );
+      setMultiSelectValues4(
+        Array.isArray(parsedFilters.locations)
+          ? parsedFilters.locations
+          : parsedFilters.locations
+          ? parsedFilters.locations.split(",")
+          : []
+      );
+      setMultiSelectValues5(
+        Array.isArray(parsedFilters.programs)
+          ? parsedFilters.programs
+          : parsedFilters.programs
+          ? parsedFilters.programs.split(",")
+          : []
+      );
 
-			// Для "sex" нужно дополнительно проверять тип данных
-			if (parsedFilters.sex) {
-				// Если "sex" уже строка, то разделяем её, если массив - сразу используем его
-				setSex(
-					typeof parsedFilters.sex === "string"
-						? parsedFilters.sex.split(",")
-						: Array.isArray(parsedFilters.sex)
-						? parsedFilters.sex
-						: [] // Если ни строка, ни массив, то пустой массив
-				);
-			} else {
-				setSex([]); // Если "sex" нет в cookies, устанавливаем пустой массив
-			}
+      // Для "sex" нужно дополнительно проверять тип данных
+      if (parsedFilters.sex) {
+        // Если "sex" уже строка, то разделяем её, если массив - сразу используем его
+        setSex(
+          typeof parsedFilters.sex === "string"
+            ? parsedFilters.sex.split(",")
+            : Array.isArray(parsedFilters.sex)
+            ? parsedFilters.sex
+            : [] // Если ни строка, ни массив, то пустой массив
+        );
+      } else {
+        setSex([]); // Если "sex" нет в cookies, устанавливаем пустой массив
+      }
 
-			setMinAge(parsedFilters.minAge || "");
-			setMaxAge(parsedFilters.maxAge || "");
-			setStartDate(parsedFilters.startDate || "");
-			setEndDate(parsedFilters.endDate || "");
-			setMemberCount(parsedFilters.memberCount || "");
-		}
-	}, []);
-
+      setMinAge(parsedFilters.minAge || "");
+      setMaxAge(parsedFilters.maxAge || "");
+      setStartDate(parsedFilters.startDate || "");
+      setEndDate(parsedFilters.endDate || "");
+      setMemberCount(parsedFilters.memberCount || "");
+    }
+  }, []);
 
   const eventOptions = eventData
     ? eventData.pages.flatMap((page) => page.items.map((item) => item.name))
@@ -219,7 +228,9 @@ export const FilterForm = ({
   return (
     <div className={styles.filterForm}>
       <div className={styles.buttons}>
-        <h1 className={isFilterVisible ? "" : styles.hidden}>ЗАПОЛНИТЕ ФОРМУ</h1>
+        <h1 className={isFilterVisible ? "" : styles.hidden}>
+          ЗАПОЛНИТЕ ФОРМУ
+        </h1>
         <div>
           {isFilterVisible && (
             <button className={styles.clear} onClick={clearFilters}>
@@ -233,7 +244,9 @@ export const FilterForm = ({
       </div>
 
       <div
-        className={`${styles.inputs} ${isFilterVisible ? styles.visible : styles.hidden}`}
+        className={`${styles.inputs} ${
+          isFilterVisible ? styles.visible : styles.hidden
+        }`}
       >
         <MultiSelectDropdown
           label="Название мероприятия"

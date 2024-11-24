@@ -64,8 +64,8 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
                                                   'type_event_id': event_type.id}, SportEvent)
 
         # Сохраняем возрастные группы (AgeGroup)
-        for req in row.reqs:
-            await _create_if_dont_exist(session, {**req.model_dump(by_alias=True), 'event_id': event.id}, AgeGroup)
+        for sex in row.sexes:
+            await _create_if_dont_exist(session, {**sex.model_dump(by_alias=True), 'event_id': event.id}, AgeGroup)
 
         # Сохраняем дисциплины (Competition)
         for competition in row.competitions:
@@ -73,5 +73,5 @@ async def save_event_and_related_data(session: AsyncSession, row: Row):
                                         Competition)
 
     except SQLAlchemyError as e:
-        # logger.exception("Mistake in row %s", row, exc_info=e)
+        logger.exception("Mistake in row %s", row, exc_info=e)
         await session.rollback()  # Откатываем сессию в случае ошибки

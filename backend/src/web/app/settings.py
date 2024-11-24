@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
     SQLALCHEMY_DATABASE_URL: str | None = None
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_PASSWORD: str
+    SMTP_SENDER: str
 
 
 

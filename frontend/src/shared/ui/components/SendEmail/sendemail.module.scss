@@ -1,0 +1,74 @@
+.block {
+  position: fixed; // Фиксированное позиционирование относительно окна браузера
+  top: 50%; // Центрирование по вертикали
+  left: 50%; // Центрирование по горизонтали
+  transform: translate(-50%, -50%); // Сдвиг для точного центрирования
+  width: 700px;
+  height: 532px;
+  background-color: #cddbfb;
+  border-radius: 25px;
+  border: 2px solid #3169f2;
+  display: flex;
+  padding-left: 48px;
+  padding-right: 48px;
+  flex-direction: column;
+  box-sizing: border-box;
+  font-family: "Evolventa", Arial, sans-serif;
+  align-items: center;
+
+  .close {
+    margin-left: auto;
+    margin-top: 25px;
+    margin-right: 25px;
+    cursor: pointer;
+  }
+
+  .title {
+    text-align: left;
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+  }
+
+  .input_block {
+    display: flex;
+    flex-direction: column;
+    width: 505px;
+
+    label {
+      font-size: 16px;
+    }
+
+    input {
+      margin-top: 18px;
+      height: 65px;
+      all: none;
+      border: none;
+      border-radius: 15px;
+      padding-left: 32px;
+      padding-right: 32px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+  }
+
+  .show {
+    width: 218px;
+    height: 60px;
+    color: #3169f2;
+    border: 1px solid #3169f2;
+    border-radius: 20px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+    font-family: "Evolventa", Arial, sans-serif;
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+
+  .show:hover {
+    background: #3169f2;
+    color: white;
+  }
+}

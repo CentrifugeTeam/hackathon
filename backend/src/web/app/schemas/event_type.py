@@ -10,4 +10,5 @@ class EventTypeSchemaRead(EventTypeSchema):
 
 
 class EventTypeSearch(BaseModel):
+    id: int
     sport: str
