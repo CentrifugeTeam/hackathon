@@ -13,7 +13,7 @@ const getCurrentDate = () => {
 };
 
 export const MainPage = () => {
-  const size = 21; // Количество элементов на странице
+  const size = 9; // Количество элементов на странице
   const [isMobile, setIsMobile] = useState(false);
 
   const [filters, setFilters] = useState({
