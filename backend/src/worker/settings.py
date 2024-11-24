@@ -22,10 +22,9 @@ class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URL: str | None = None
 
 
-
     @field_validator("SQLALCHEMY_DATABASE_URL", mode="before")
     def assemble_db_connection_string(
-        cls, value: PostgresDsn, info: FieldValidationInfo
+            cls, value: PostgresDsn, info: FieldValidationInfo
     ) -> str:
         if isinstance(value, str):
             return value

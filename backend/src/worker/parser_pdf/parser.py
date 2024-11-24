@@ -72,7 +72,7 @@ class Row(BaseModel):
     event_type: EventTypeSchema
     event: EventSchema
     location: LocationSchema
-    reqs: list[AgeGroupSchema]
+    sexes: list[AgeGroupSchema]
     competitions: list[CompetitionSchema]
 
 
@@ -202,68 +202,105 @@ class ParserPDF:
     def _handle_after_date_block(self, gen: Generator,
                                  sport_block: Block,
                                  date_block: Block):
-        event_id = sport_block.text[0]
-        event_name = sport_block.text[1]
-        if len(sport_block.text) < 3:
-            # logger.warning('sport block with text less then 3! %s', sport_block)
-            reqs = []
+        count_exec_gen = 2
+        try:
+
+            event_id = sport_block.text.pop(0)
+            sport_name = ''
+            for text in sport_block.text.copy():
+                if text.isupper():
+                    sport_block.text.remove(text)
+                    sport_name += ' ' + text
+                else:
+                    break
+
+            sport_name.strip(' ')
+
+            person_sex = ''
+            for text in sport_block.text.copy():
+                if text.isupper():
+                    break
+                else:
+                    sport_block.text.remove(text)
+                    person_sex += ' ' + text
+
+            person_sex = person_sex.strip()
+            sexes = list(self._convert_to_person_requirements(person_sex))
+            # sexes = []
+
+            # for sex in self._wrapped_parse(person_sex):
+            #     sexes.append(sex)
+
+            competitions = self._convert_to_programs_and_disciplines(" ".join(sport_block.text))
+            count_exec_gen = 1
+            location = self._create_location(gen)
+
+            count_exec_gen = 0
+            count_block = next(gen)
+            event = EventSchema(
+                category=self._current_category,
+                id=event_id, name=sport_name, start_date=date_block.text[0], end_date=date_block.text[1],
+                count_people=count_block.text[0]
+            )
+            event_type = EventTypeSchema(sport=self._current_sport)
+        except Exception as e:
+            for i in range(count_exec_gen):
+                next(gen)
+            raise e
 
         else:
-            reqs = list(self._convert_to_person_requirements(sport_block.text[2]))
-
-        if len(sport_block.text) > 5:
-            competitions = self._convert_to_programs_and_disciplines(" ".join(sport_block.text[2:]))
-        elif len(sport_block.text) < 3:
-            competitions = self._convert_to_programs_and_disciplines(sport_block.text[2])
-        else:
-            competitions = []
-
-        location = self._create_location(gen)
-
-        count_block = next(gen)
-        event = EventSchema(
-            category=self._current_category,
-            id=event_id, name=event_name, start_date=date_block.text[0], end_date=date_block.text[1],
-            count_people=count_block.text[0]
-        )
-        event_type = EventTypeSchema(sport=self._current_sport)
-
-        row = Row(
-            event_type=event_type,
-            location=location,
-            reqs=reqs,
-            event=event,
-            competitions=competitions,
-        )
-        return row
+            row = Row(
+                event_type=event_type,
+                location=location,
+                sexes=sexes,
+                event=event,
+                competitions=competitions,
+            )
+            return row
 
     def _parse_blocks(self, blocks: list[str]):
-        people = [blocks[0]]
+        first = blocks[0].strip(',. ')
+        start = None
+        end = None
+        if len(first) == 1:
+            people = []
+        else:
+            people = [first]
+
         age = blocks[-1]
+        logger.info('blocks %s, %s', first, age)
         for block in blocks[1:-1]:
             block = block.strip('., ')
             if block == 'от':
-                pass
+                return [AgeGroupSchema(name=person, start=age) for person in people]
             elif block == 'до':
-                pass
+                return [AgeGroupSchema(name=person, end=age) for person in people]
             elif len(block) == 1 or block == 'старше':
                 continue
             else:
                 people.append(block)
 
-        start, stop = age.split('-')
-        return [person for person in people]
+        split = age.split('-')
+        if len(split) == 2:
+            start = int(split[0])
+            end = int(split[1])
+        return [AgeGroupSchema(name=person, start=start, end=end) for person in people]
 
     def _wrapped_parse(self, text: str):
         if text == '':
             return
         index = text.find('лет')
         if index == -1:
-            return [name.strip('., ') for name in text.split(',') if name != '']
-        blocks = text[:index].strip(',. ').split(' ')
-        res = self._parse_blocks(blocks)
-        return self._wrapped_parse(text[index+3:])
+            for name in text.split(','):
+                if name != '':
+                    yield AgeGroupSchema(name=name.strip('., '))
 
+        blocks = text[:index].strip(',. ').split(' ')
+        sexes = self._parse_blocks(blocks)
+        for sex in sexes:
+            yield sex
+
+        return self._wrapped_parse(text[index + 3:])
 
     def _parse_rows(self, gen: Generator) -> Row:
         while True:
@@ -272,7 +309,6 @@ class ParserPDF:
             except ParseRowException as e:
                 pass
                 # raise e
-                # logger.exception('Exception in parsing rows with blocks %s', e.blocks, exc_info=e)
 
 
             else:
@@ -303,6 +339,5 @@ class ParserPDF:
 
     def _parse_raw_data(self, data: tuple) -> Block:
         block = Block(*data)
-        block.text: str  # type: ignore
         block.text = (block.text.rstrip('\n')).split('\n')
         return block

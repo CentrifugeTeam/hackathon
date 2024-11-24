@@ -32,8 +32,6 @@ class Age(BaseModel):
     name: str
 
 
-
-
 class EventBulk(EventBase):
     location: LocationRead
     age_groups: list[AgeGroupRead]
@@ -43,5 +41,3 @@ class EventBulk(EventBase):
 
 class EventBulkRead(EventBulk):
     id: int
-
-
